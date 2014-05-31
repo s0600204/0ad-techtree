@@ -12,6 +12,8 @@ var g_canvasParts = { };
 
 function init(settings)
 {
+	return;
+	
 	g_TechData = loadTechData();
 	g_canvas = SVG('svg_canvas');
 	
