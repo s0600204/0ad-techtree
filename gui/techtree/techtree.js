@@ -351,17 +351,26 @@ function draw3 () {
 	
 	console.log("(draw) Drawing tech tree.");
 	
+	// Clear canvas, then establish framework
 	g_canvas.clear();
+	g_canvasParts["banner"] = g_canvas.group();
+	g_canvasParts["banner"].attr('id', "tree__banner");
+	g_canvasParts["techs"] = g_canvas.group();
+	g_canvasParts["techs"].move(4, 80);
+	g_canvasParts["techs"].attr('id', "tree__techs");
+	g_canvasParts["deplines"] = g_canvas.group();
+	g_canvasParts["deplines"].move(4, 80);
+	g_canvasParts["deplines"].attr('id', "tree__deplines");
 	
 	// Title
-	var civName = g_canvas.text(g_CivData[g_selectedCiv].Name);
+	var civName = g_canvasParts["banner"].text(g_CivData[g_selectedCiv].Name);
 	civName.attr({
 		'x': 8
 	,	'y': 8
 	,	'font-size': 24
 	,	'leading': 1
 	});
-	var civDesc = g_canvas.text(g_CivData[g_selectedCiv].History);
+	var civDesc = g_canvasParts["banner"].text(g_CivData[g_selectedCiv].History);
 	civDesc.attr({
 		'x': 8
 	,	'y': civName.bbox().y2
@@ -371,11 +380,6 @@ function draw3 () {
 	,	'width': window.innerWidth - 24
 	});
 	civDesc.textWrapped(true);
-	
-	// Basic framework
-	g_canvasParts["tree"] = g_canvas.group();
-	g_canvasParts["tree"].move(0, 80);
-	g_canvasParts["tree"].attr('id', "tree__tree");
 	
 	var margin = 4;		// margin between techboxes (mainly vertical)
 	var wid = 256;		// column width
@@ -388,7 +392,12 @@ function draw3 () {
 	for (var phase in g_treeCols)
 	{
 		if (typeof(g_TechData[getPhaseTech(phase)].tooltip) == "string") {
-			var pb = techbox((gap+wid) * colHei.length + margin+gap/2, margin, (wid+gap)*(g_treeCols[phase].length)-gap, getPhaseTech(phase));
+			var pb = techbox(
+					(gap+wid) * colHei.length + margin,
+					margin,
+					(wid+gap)*(g_treeCols[phase].length)-gap,
+					getPhaseTech(phase)
+				);
 		}
 		
 		for (var stage in g_treeCols[phase])
@@ -413,7 +422,7 @@ function draw3 () {
 		}
 		
 		// Draw the tech in a box
-		var tb = techbox(((wid+gap)*myCol)+margin+gap/2, colHei[myCol]+margin, wid, techCode);
+		var tb = techbox(((wid+gap)*myCol)+margin, colHei[myCol]+margin, wid, techCode);
 		
 		// 
 		var myHeight = tb.bbox().height + margin;
@@ -428,12 +437,12 @@ function draw3 () {
 				
 				techPair = g_treeBranches[techPair].techs;
 				techPair = (techCode != techPair[0]) ? techPair[0] : techPair[1];
-				tb = techbox(((wid+gap)*myCol)+margin+gap/2, colHei[myCol]+myHeight+margin*2, wid, techPair);
+				tb = techbox(((wid+gap)*myCol)+margin, colHei[myCol]+myHeight+margin*2, wid, techPair);
 				myHeight += tb.bbox().height + margin;
 				
-				var pairBox = g_canvasParts["tree"].rect();
+				var pairBox = g_canvasParts["techs"].rect();
 				pairBox.attr({
-					'x': ((wid+gap)*myCol)+gap/2
+					'x': ((wid+gap)*myCol)
 				,	'y': colHei[myCol] + margin
 				,	'width': wid + margin * 2
 				,	'height': myHeight + margin
@@ -479,33 +488,14 @@ function draw3 () {
 			,	'y2': b2.bbox().y2 - b2.bbox().height/2
 			}
 			
-//			var svgline = g_canvasParts["tree"].line(line.x1, line.y1, line.x2, line.y2).stroke({'width': 1, 'color': '#088'});	// direct line
-			var svgline = g_canvasParts["tree"].path(
+//			var svgline = g_canvasParts["deplines"].line(line.x1, line.y1, line.x2, line.y2).stroke({'width': 1, 'color': '#088'});	// direct line
+			var svgline = g_canvasParts["deplines"].path(
 					"M" + line.x1 +","+ line.y1
 				+	"Q" + (line.x1+(line.x2-line.x1)/6) +","+ line.y1 +" "+ (line.x2+line.x1)/2 +","+ (line.y2+line.y1)/2
 				+	"T" + line.x2 +","+ line.y2
 				).attr({'stroke-width': 1, 'stroke': '#088', 'fill-opacity': 0});
 		}
 	}
-	
-/*	var pos = 0;
-	var h = g_canvasParts["tree"].bbox().height + margin;
-	for (var phase in g_treeCols)
-	{
-		pos += g_treeCols[phase].length;
-		var phaseframe = g_canvasParts["tree"].rect();
-		phaseframe.attr({
-			'fill': '#088'
-		,	'fill-opacity': 0.0
-		,	'stroke': '#888'
-		,	'stroke-opacity': 1
-		,	'stroke-width': 1
-		,	'width': (wid) * g_treeCols[phase].length + margin*6 + (gap * (g_treeCols[phase].length-1))
-		,	'height': h
-		,	'x': (wid+gap) * (pos - g_treeCols[phase].length) + gap/2 - margin*2
-		,	'y': 0
-		}).back();
-	}	*/
 	
 	resizeDrawing();
 }
@@ -532,7 +522,7 @@ techbox = function (x, y, w, tc) {
 	w = (typeof(w) !== "number") ? 256 : w;
 	
 //	this.box = g_canvas.group();
-	this.box = g_canvasParts["tree"].group();
+	this.box = g_canvasParts["techs"].group();
 	this.box.move(x, y);
 	this.box.attr('id', tc+"__box");
 	
@@ -595,7 +585,7 @@ techbox = function (x, y, w, tc) {
 	,	'font-size': Math.round(this.font * 0.8)
 	,	'x': this.padding
 	,	'y': this.tech_image.height() + this.padding
-	,	'width': w - this.padding
+	,	'width': w - this.padding * 2
 	,	'leading': 1
 	});
 	this.tech_tooltip.textWrapped(true);
@@ -606,7 +596,7 @@ techbox = function (x, y, w, tc) {
 	,	'font-size': Math.round(this.font * 0.8)
 	,	'x': this.padding
 	,	'y': this.tech_image.height() + this.tech_tooltip.bbox().height + this.padding
-	,	'width': w - this.padding
+	,	'width': w - this.padding * 2
 	,	'leading': 1
 	});
 	this.tech_desc.textWrapped(true);
