@@ -24,10 +24,121 @@ function initTechList()
 {
 	console.log("(build) Tech Tree Branch Generation:");
 	/* Branch Generation */
-	for (tech in g_TechData)
+	for (techCode in g_TechData)
 	{
-		g_treeBranches[tech] = { reqs:[ ], unlocks:[ ], phase:"" };
-		/*	g_treeBranches[tech] = { reqs:[ ], unlocks:[ ], pair:"", phase:"", civ:"" }	*/
+		// Create initial structure for this branch object
+		g_treeBranches[techCode] = { "reqs":{ }, "unlocks":[ ]/*, "phase":"" */ };
+		/*	g_treeBranches[techCode] = { reqs:[ ], unlocks:[ ], pair:"", phase:"", civ:"" }	*/
+		
+		// Load info for this tech
+		techInfo = g_TechData[techCode];
+		
+		// Extracts reqs
+		calcReqs = function (op, val)
+		{
+			switch (op)
+			{
+			case "civ":
+			case "tech":
+				return val;
+			
+			case "all":
+			case "any":
+				var t = [ ];
+				var c = [ ];
+				for (var nv of val)
+				{
+					for (var o in nv)
+					{
+						r = calcReqs(o, nv[o]);
+						switch (o)
+						{
+						case "civ":
+							c.push(r);
+							break;
+							
+						case "tech":
+							t.push(r);
+							break;
+						
+						case "any":
+							c = c.concat(r[0]);
+							t = t.concat(r[1]);
+							break;
+						
+						case "all":
+							for (var ci of r[0])
+							{
+							//	c[ci] = r[1];
+								c.push([ci, r[1]]);
+							}
+							break;
+						
+						}
+					}
+				}
+				return [c, t];
+			}
+		}
+		
+		if (typeof(techInfo.requirements) == "object")
+		{
+			for (var req in techInfo.requirements)
+			{
+				var ret = calcReqs(req, techInfo.requirements[req]);
+				
+				switch (req)
+				{
+				case "tech":
+					g_treeBranches[techCode].reqs["generic"] = [ret];
+					break;
+				
+				case "civ":
+					g_treeBranches[techCode].reqs[ret] = [ ];
+					break;
+				
+				case "any":
+					if (ret[0].length > 0)
+					{
+						for (var r of ret[0])
+						{
+							if (Array.isArray(r) == true)
+							{
+								g_treeBranches[techCode].reqs[r[0]] = r[1];
+							}
+							else
+							{
+								g_treeBranches[techCode].reqs[r] = [];
+							}
+						}
+					}
+					if (ret[1].length > 0)
+					{
+						g_treeBranches[techCode].reqs["generic"] = ret[1];
+					}
+					break;
+				
+				case "all":
+					for (var r in r[0])
+					{
+						g_treeBranches[techCode].reqs[r] = ret[1];
+					}
+					break;
+				}
+			}
+		}
+		
+	}
+	
+	addToGenericReqs = function (techCode, tech) {
+		if (tech.slice(0, 4) == "pair") {
+			return;
+		}
+		if (g_treeBranches[techCode].reqs["generic"] === undefined) {
+			g_treeBranches[techCode].reqs["generic"] = [tech];
+		} else {
+			g_treeBranches[techCode].reqs["generic"].push(tech);
+		}
 	}
 	
 	console.log("(build) - First Pass");
@@ -36,59 +147,6 @@ function initTechList()
 	{
 		// Load info for this tech
 		techInfo = g_TechData[techCode];
-		
-		// Determine tech requirements
-		if (typeof(techInfo.requirements) == "object")
-		{
-			var techReq = false;
-			g_treeBranches[techCode].civ = [ ];
-			
-			// Designate civ-specific techs, single civ
-			if ("civ" in techInfo.requirements) {
-				g_treeBranches[techCode].civ.push(techInfo.requirements.civ);
-			}
-			if ("tech" in techInfo.requirements)
-			{
-				techReq = techInfo.requirements["tech"];
-			}
-			if ("any" in techInfo.requirements)
-			{
-				for (var req of techInfo.requirements["any"])
-				{
-					if ("civ" in req)
-					{
-						g_treeBranches[techCode].civ.push(req["civ"]);
-					}
-					if ("tech" in req)
-					{
-						g_treeBranches[techCode].givenCivsOnly = "no";
-						techReq = req["tech"];
-					} 
-				}
-			}
-			
-			if (techReq)
-			{
-				g_treeBranches[techReq].unlocks.push(techCode);
-				if (techReq.slice(0, 5) == "phase")
-				{
-					g_treeBranches[techCode].phase = techReq;
-				}
-				else
-				{
-					// This never gets called!
-					// Why? Because if a tech comes immediately after another tech, it uses 'supersedes' instead of 'requirements'
-					console.log(techCode, "tech");
-					g_treeBranches[dePath(techReq)].reqs.push();
-					g_treeBranches[techCode].reqs.push(dePath(techReq));
-				}
-			}
-			
-			if (g_treeBranches[techCode].civ.length < 1)
-			{
-				delete g_treeBranches[techCode].civ;
-			}
-		}
 		
 		if (techCode.slice(0, 4) == "pair")
 		{
@@ -102,19 +160,16 @@ function initTechList()
 				
 				g_treeBranches[techInfo.supersedes].unlocks.push(techInfo.top);
 				g_treeBranches[techInfo.supersedes].unlocks.push(techInfo.bottom);
-				
-			//	g_treeBranches[techInfo.top].reqs.push(techInfo.supersedes);
-			//	g_treeBranches[techInfo.bottom].reqs.push(techInfo.supersedes);
 			}
 		}
 		else if ("supersedes" in techInfo)
 		{
 			techInfo.supersedes = dePath(techInfo.supersedes);
-			g_treeBranches[techCode].reqs.push(techInfo.supersedes);
+			addToGenericReqs(techCode, techInfo.supersedes);
 			g_treeBranches[techInfo.supersedes].unlocks.push(techCode);
 		}
 		
-		// Make note of the designated tech-pair
+		// Make note of the designated tech-pair (can't load from the pairs yet, due to the fact they aren't loaded)
 		if ("pair" in techInfo)
 		{
 			g_treeBranches[techCode].pair = dePath(techInfo.pair);
@@ -135,24 +190,25 @@ function initTechList()
 				pairUnlocks = g_treeBranches[pairName].unlocks;
 				g_treeBranches[techCode].unlocks = g_treeBranches[techCode].unlocks.concat(pairUnlocks);
 				for (tech of pairUnlocks) {
-					g_treeBranches[tech].reqs.push(techCode);
+					addToGenericReqs(tech, techCode);
 				}
 			}
 		}
 		
 		/* Determine Phases and their Order */
-		if (g_treeBranches[techCode].reqs.length > 0)
+		if (techCode.slice(0,5) !== "phase"
+			&& g_treeBranches[techCode].reqs["generic"] !== undefined
+			&& g_treeBranches[techCode].reqs["generic"].length > 1)
 		{
-			reqTech = g_treeBranches[techCode].reqs[0];
 			
-			if ("techs" in g_treeBranches[reqTech])
+			reqTech = g_treeBranches[techCode].reqs["generic"][1];	// most likely not to be a phase
+			
+			if (g_treeBranches[reqTech].reqs["generic"] === undefined)
 			{
-				// For Pairs
-				reqTech = g_treeBranches[reqTech]["techs"][0];
+				continue;
 			}
-			
-			reqPhase = g_treeBranches[reqTech].phase;
-			myPhase = g_treeBranches[techCode].phase;
+			reqPhase = g_treeBranches[reqTech].reqs["generic"][0];
+			myPhase = g_treeBranches[techCode].reqs["generic"][0];
 			
 			if (reqPhase == "" || myPhase == "" || reqPhase == myPhase)
 			{
@@ -185,7 +241,6 @@ function initTechList()
 	
 	console.log("(build) Build Complete!");
 }
-
 
 // Initialize the dropdown containing all the available civs
 function initCivNameList()
@@ -231,67 +286,46 @@ function compileHeads () {
 	{
 		if (techCode.slice(0, 4) !== "pair" && techCode.slice(0, 5) !== "phase")
 		{
-			if (typeof(g_treeBranches[techCode].origPhase) == "string")
-			{
-				g_treeBranches[techCode].phase = g_treeBranches[techCode].origPhase;
-				delete(g_treeBranches[techCode].origPhase);
+			var reqs = getReqs(techCode);
+			if (reqs === false) {
+				console.info(techCode +" has no requirements set for "+ g_selectedCiv +" and therefore will not appear");
+				continue;
 			}
+			var phase = getPhase(techCode);
 			
-			if ("civ" in g_treeBranches[techCode] && g_treeBranches[techCode].civ.indexOf(g_selectedCiv) == -1)
-			{
-				if (!("givenCivsOnly" in g_treeBranches[techCode]) || ("givenCivsOnly" in g_treeBranches[techCode] && g_treeBranches[techCode].givenCivsOnly != "no")) {
-					continue;
-				}
-			} else {
-				if ("givenCivsOnly" in g_treeBranches[techCode] && g_treeBranches[techCode].givenCivsOnly == "no") {
-					g_treeBranches[techCode].origPhase = g_treeBranches[techCode].phase;
-					g_treeBranches[techCode].phase = g_phases[0];
-				}
-			}
-			
-			if (g_treeBranches[techCode].phase == "")
-			{
-				// if no phase given, and no reqs, must be a civbonus/civpenalty
-				if (g_treeBranches[techCode].reqs.length == 0)
-				{
-					g_treeHeads["bonuses"].push(techCode);
-				}
+			var col = 0;
+			if (reqs.length == 0) {
+				g_treeHeads[phase].push(techCode);
+				g_treeHeads["all"].push(techCode);
 			}
 			else
 			{
-				var col = 0;
-				if (g_treeBranches[techCode].reqs.length == 0)
+				// work out where in each phase it sits
+				var tmpCode = techCode;
+				var tmpReqs = reqs;
+				while (tmpReqs.length > 0)
 				{
-					// no requirements mean that it gets addes to the heads pile
-					g_treeHeads[g_treeBranches[techCode].phase].push(techCode);
-					g_treeHeads["all"].push(techCode);
-				}
-				else
-				{
-					// work out where in each phase it sits
-					var tmpCode = techCode;
-					while (g_treeBranches[tmpCode].reqs.length > 0)
+					tmpCode = tmpReqs[0];
+					if (getPhase(tmpCode) == phase)
 					{
-						tmpCode = g_treeBranches[tmpCode].reqs[0];
-						if (g_treeBranches[tmpCode].phase == g_treeBranches[techCode].phase)
-						{
-							col++;
-						}
+						col++;
+					} else {
+						break;
 					}
-					if (g_treeCols[g_treeBranches[techCode].phase][col] == undefined)
-					{
-						g_treeCols[g_treeBranches[techCode].phase][col] = [ ];
-					}
+					tmpReqs = getReqs(tmpCode);
 				}
-				
-				g_treeCols[g_treeBranches[techCode].phase][col].push(techCode);
-				
-				// Sort unlocks by name
-				if (g_treeBranches[techCode].unlocks.length > 0)
+				if (g_treeCols[phase][col] == undefined)
 				{
-					g_treeBranches[techCode].unlocks.sort(sortTechByName);
+					g_treeCols[phase][col] = [ ];
 				}
-				
+			}
+			
+			g_treeCols[phase][col].push(techCode);
+			
+			// Sort unlocks by name
+			if (g_treeBranches[techCode].unlocks.length > 0)
+			{
+				g_treeBranches[techCode].unlocks.sort(sortTechByName);
 			}
 		}
 	}
@@ -302,6 +336,33 @@ function compileHeads () {
 	}
 		
 	
+}
+
+function getPhase (techCode) {
+	var reqs = getReqs(techCode, false);
+	if (reqs.length > 0 && reqs[0].slice(0, 5) == "phase") {
+		return reqs[0];
+	}
+	return g_phases[0];
+}
+
+function getReqs (techCode, noPhase) {
+	if (noPhase === undefined) { noPhase = true; }
+	
+	var reqs = g_treeBranches[techCode].reqs;
+	if (reqs[g_selectedCiv] !== undefined) {
+		reqs = reqs[g_selectedCiv];
+	} else if (reqs["generic"] !== undefined) {
+		reqs = reqs["generic"];
+	} else {
+		return false;
+	}
+	
+	if (noPhase && reqs.length > 0 && reqs[0].slice(0, 5) == "phase") {
+		reqs = reqs.slice(1);
+	}
+	
+	return reqs;
 }
 
 function sortTechByName (a,b) {
