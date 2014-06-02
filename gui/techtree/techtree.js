@@ -287,16 +287,26 @@ function compileHeads () {
 		if (techCode.slice(0, 4) !== "pair" && techCode.slice(0, 5) !== "phase")
 		{
 			var reqs = getReqs(techCode);
-			if (reqs === false) {
-				console.info(techCode +" has no requirements set for "+ g_selectedCiv +" and therefore will not appear");
+			if (reqs === false)
+			{
+				// this is a tech that is specific to a different civ
 				continue;
 			}
 			var phase = getPhase(techCode);
 			
 			var col = 0;
 			if (reqs.length == 0) {
-				g_treeHeads[phase].push(techCode);
-				g_treeHeads["all"].push(techCode);
+				if (g_TechData[techCode].autoResearch !== undefined
+					&& g_TechData[techCode].autoResearch == true)
+				{
+					g_treeHeads["bonuses"].push(techCode);
+					continue;
+				}
+				else
+				{
+					g_treeHeads[phase].push(techCode);
+					g_treeHeads["all"].push(techCode);
+				}
 			}
 			else
 			{
@@ -650,7 +660,7 @@ techbox = function (x, y, w, tc) {
 		}
 	}
 	
-	this.tech_tooltip = this.box.text(g_TechData[tc].tooltip);
+	this.tech_tooltip = this.box.text((g_TechData[tc].tooltip)?g_TechData[tc].tooltip:"");
 	this.tech_tooltip.attr({
 		'fill': '#088'
 	,	'font-size': Math.round(this.font * 0.8)
