@@ -24,14 +24,14 @@ function initTechList()
 {
 	console.log("(build) Tech Tree Branch Generation:");
 	/* Branch Generation */
-	for (techCode in g_TechData)
+	for (var techCode in g_TechData)
 	{
 		// Create initial structure for this branch object
 		g_treeBranches[techCode] = { "reqs":{ }, "unlocks":[ ]/*, "phase":"" */ };
 		/*	g_treeBranches[techCode] = { reqs:[ ], unlocks:[ ], pair:"", phase:"", civ:"" }	*/
 		
 		// Load info for this tech
-		techInfo = g_TechData[techCode];
+		var techInfo = g_TechData[techCode];
 		
 		// Extracts reqs
 		calcReqs = function (op, val)
@@ -143,10 +143,10 @@ function initTechList()
 	
 	console.log("(build) - First Pass");
 	/* First Pass */
-	for (techCode in g_treeBranches)
+	for (var techCode in g_treeBranches)
 	{
 		// Load info for this tech
-		techInfo = g_TechData[techCode];
+		var techInfo = g_TechData[techCode];
 		
 		if (techCode.slice(0, 4) == "pair")
 		{
@@ -178,7 +178,7 @@ function initTechList()
 	
 	console.log("(build) - Second Pass");
 	/* Second Pass */
-	for (techCode in g_treeBranches)
+	for (var techCode in g_treeBranches)
 	{
 		// Load unlocks from techs' pairs
 		if ("pair" in g_treeBranches[techCode])
@@ -270,19 +270,20 @@ function initCivNameList()
 }
 
 // Compile list of heads (branches with no reqs)
-function compileHeads () {
+function compileHeads ()
+{
 	
 	console.log("(civ select) Calculating starting points of tree");
 	
 	g_treeHeads = { "bonuses":[ ], "all": [ ] };
-	for (phase of g_phases)
+	for (var phase of g_phases)
 	{
 		g_treeHeads[phase] = [ ];
 		g_treeCols[phase] = [ ];
 		g_treeCols[phase][0] = [ ];
 	}
 	
-	for (techCode in g_treeBranches)
+	for (var techCode in g_treeBranches)
 	{
 		if (techCode.slice(0, 4) !== "pair" && techCode.slice(0, 5) !== "phase")
 		{
@@ -295,7 +296,8 @@ function compileHeads () {
 			var phase = getPhase(techCode);
 			
 			var col = 0;
-			if (reqs.length == 0) {
+			if (reqs.length == 0)
+			{
 				if (g_TechData[techCode].autoResearch !== undefined
 					&& g_TechData[techCode].autoResearch == true)
 				{
@@ -348,23 +350,31 @@ function compileHeads () {
 	
 }
 
-function getPhase (techCode) {
+function getPhase (techCode)
+{
 	var reqs = getReqs(techCode, false);
-	if (reqs.length > 0 && reqs[0].slice(0, 5) == "phase") {
+	if (reqs.length > 0 && reqs[0].slice(0, 5) == "phase")
+	{
 		return reqs[0];
 	}
 	return g_phases[0];
 }
 
-function getReqs (techCode, noPhase) {
+function getReqs (techCode, noPhase)
+{
 	if (noPhase === undefined) { noPhase = true; }
 	
 	var reqs = g_treeBranches[techCode].reqs;
-	if (reqs[g_selectedCiv] !== undefined) {
+	if (reqs[g_selectedCiv] !== undefined)
+	{
 		reqs = reqs[g_selectedCiv];
-	} else if (reqs["generic"] !== undefined) {
+	}
+	else if (reqs["generic"] !== undefined)
+	{
 		reqs = reqs["generic"];
-	} else {
+	}
+	else
+	{
 		return false;
 	}
 	
@@ -375,7 +385,8 @@ function getReqs (techCode, noPhase) {
 	return reqs;
 }
 
-function sortTechByName (a,b) {
+function sortTechByName (a,b)
+{
 	a = (hasSpecificName(a)) ? g_TechData[a].specificName[g_selectedCiv] : g_TechData[a].genericName;
 	b = (hasSpecificName(b)) ? g_TechData[b].specificName[g_selectedCiv] : g_TechData[b].genericName;
 	if (a < b)
@@ -387,7 +398,8 @@ function sortTechByName (a,b) {
 }
 	
 
-function hasSpecificName (techCode) {
+function hasSpecificName (techCode)
+{
 	return (typeof(g_TechData[techCode].specificName) == "object" && typeof(g_TechData[techCode].specificName[g_selectedCiv]) == "string");
 }
 
@@ -418,7 +430,8 @@ function getPhaseTech (phase) {
 	}
 }
 
-function draw3 () {
+function draw3 ()
+{
 	
 	console.log("(draw) Drawing tech tree.");
 	
@@ -462,7 +475,8 @@ function draw3 () {
 	// Set initial column heights and draw phase techs
 	for (var phase in g_treeCols)
 	{
-		if (typeof(g_TechData[getPhaseTech(phase)].tooltip) == "string") {
+		if (typeof(g_TechData[getPhaseTech(phase)].tooltip) == "string")
+		{
 			var pb = techbox(
 					(gap+wid) * colHei.length + margin,
 					margin,
@@ -571,7 +585,8 @@ function draw3 () {
 	resizeDrawing();
 }
 
-function matchTech2Column (techCode) {
+function matchTech2Column (techCode)
+{
 	var col = 0;
 	for (var phase in g_treeCols)
 	{
@@ -585,7 +600,8 @@ function matchTech2Column (techCode) {
 	}
 }
 
-techbox = function (x, y, w, tc) {
+techbox = function (x, y, w, tc)
+{
 	
 	if (typeof(tc) !== "string") { return; }
 	x = (typeof(x) !== "number") ? 0 : x;
@@ -632,7 +648,8 @@ techbox = function (x, y, w, tc) {
 	,	'y': this.padding
 	,	'leading': 1
 	});
-	if (hasSpecificName(tc)) {
+	if (hasSpecificName(tc))
+	{
 		this.tech_name.text(g_TechData[tc].specificName[g_selectedCiv])
 		this.tech_name.build(true);
 		this.tech_name.tspan(" (" + g_TechData[tc].genericName + ")").attr('font-size', Math.round(this.font*0.7));
@@ -642,8 +659,10 @@ techbox = function (x, y, w, tc) {
 	this.tech_cost = this.box.group();
 	this.tech_cost.move(this.tech_image.width() + this.padding*2, this.padding*2+this.font);
 	var rcnt = 0;
-	for (res in g_TechData[tc].cost) {
-		if (g_TechData[tc].cost[res] > 0) {
+	for (res in g_TechData[tc].cost)
+	{
+		if (g_TechData[tc].cost[res] > 0)
+		{
 			this.tech_cost.image("./art/textures/ui/session/icons/resources/"+res+"_small.png").attr({'x': rcnt*48});
 			this.tech_cost.text(" "+g_TechData[tc].cost[res]).attr({'leading':1,'font-size':Math.round(this.font*0.8), 'x': rcnt*48+18, 'y': this.padding});
 			rcnt++;
@@ -666,7 +685,7 @@ techbox = function (x, y, w, tc) {
 		'fill': '#000'
 	,	'font-size': Math.round(this.font * 0.8)
 	,	'x': this.padding
-	,	'y': this.tech_image.height() + this.tech_tooltip.bbox().height + this.padding
+	,	'y': this.tech_image.height() + this.tech_tooltip.bbox().height
 	,	'width': w - this.padding * 2
 	,	'leading': 1
 	});
@@ -687,7 +706,8 @@ techbox = function (x, y, w, tc) {
 	return this.box;
 }
 
-function resizeDrawing () {
+function resizeDrawing ()
+{
 //	console.log('(draw) Resizing screen real estate');
 	
 	var bbox = g_canvas.bbox();
