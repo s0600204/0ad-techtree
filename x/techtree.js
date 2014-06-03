@@ -270,21 +270,11 @@ function draw3 ()
 	});
 	var civName = g_canvasParts["banner"].text(g_civs[g_selectedCiv].name);
 	civName.attr({
-		'x': 80
-	,	'y': 4
+		'x': 84
+	,	'y': 24
 	,	'font-size': 24
 	,	'leading': 1
 	});
-	var civDesc = g_canvasParts["banner"].text(g_civs[g_selectedCiv].description);
-	civDesc.attr({
-		'x': 80
-	,	'y': civName.bbox().y2
-	,	'fill': "#088"
-	,	'font-size': 12
-	,	'leading': 1
-	,	'width': window.innerWidth - 24 - 80
-	});
-	civDesc.textWrapped(true);
 	
 	var margin = 4;		// margin between techboxes (mainly vertical)
 	var wid = 256;		// column width
@@ -354,7 +344,7 @@ function draw3 ()
 				,	'height': myHeight + margin
 				,	'fill-opacity': 0
 				,	'stroke': '#888'
-				});
+				}).back();
 				myHeight += margin * 2;
 			}
 		}
@@ -508,7 +498,7 @@ techbox = function (x, y, w, tc)
 	,	'font-size': Math.round(this.font * 0.8)
 	,	'x': this.padding
 	,	'y': this.tech_image.height() + this.padding
-	,	'width': w - this.padding
+	,	'width': w - this.padding * 2
 	,	'leading': 1
 	});
 	this.tech_tooltip.textWrapped(true);
@@ -519,7 +509,7 @@ techbox = function (x, y, w, tc)
 	,	'font-size': Math.round(this.font * 0.8)
 	,	'x': this.padding
 	,	'y': this.tech_image.height() + this.tech_tooltip.bbox().height
-	,	'width': w - this.padding
+	,	'width': w - this.padding * 2
 	,	'leading': 1
 	});
 	this.tech_desc.textWrapped(true);

@@ -204,7 +204,6 @@ foreach ($g_CivData as $civCode => $civInfo) {
 			"name"			=> $civInfo["Name"]
 		,	"culture"		=> $civInfo["Culture"]
 		,	"emblem"		=> $civInfo["Emblem"]
-		,	"description"	=> $civInfo["History"]
 		];
 }
 
