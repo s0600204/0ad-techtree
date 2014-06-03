@@ -6,7 +6,6 @@
 	
 	<script src="x/techtree.js"></script>
 	<script src="x/svg.min.js"></script>
-	<script src="x/svg.textwrap.js"></script>
 	
 	<style>
 	body {

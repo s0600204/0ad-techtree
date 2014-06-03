@@ -492,39 +492,15 @@ techbox = function (x, y, w, tc)
 		}
 	}
 	
-	this.tech_tooltip = this.box.text(techInfo.tooltip);
-	this.tech_tooltip.attr({
-		'fill': '#088'
-	,	'font-size': Math.round(this.font * 0.8)
-	,	'x': this.padding
-	,	'y': this.tech_image.height() + this.padding
-	,	'width': w - this.padding * 2
-	,	'leading': 1
-	});
-	this.tech_tooltip.textWrapped(true);
-	
-	this.tech_desc = this.box.text(techInfo.description);
-	this.tech_desc.attr({
-		'fill': '#000'
-	,	'font-size': Math.round(this.font * 0.8)
-	,	'x': this.padding
-	,	'y': this.tech_image.height() + this.tech_tooltip.bbox().height
-	,	'width': w - this.padding * 2
-	,	'leading': 1
-	});
-	this.tech_desc.textWrapped(true);
-	
 	this.box.elems = {
 		'frame': this.box_frame
 	,	'name': this.tech_name
 	,	'image': this.tech_image
-	,	'desc': this.tech_desc
-	,	'tooltip': this.tech_tooltip
 	,	'cost': this.tech_cost
 	};
 	
 //	console.log(tc +" "+ this.box.bbox().height);
-	this.box_frame.attr('height', Math.round(this.tech_image.bbox().merge(this.tech_desc.bbox()).height)+this.padding);
+	this.box_frame.attr('height', Math.round(this.tech_image.bbox().height)+this.padding*2);
 	
 	return this.box;
 }

@@ -37,7 +37,6 @@ foreach ($g_TechData as $techCode => $techInfo) {
 						"generic"	=> $techInfo["genericName"],
 						"specific"	=> Array()
 					]
-			,	"description"	=> (array_key_exists("description", $techInfo)) ? $techInfo["description"] : ""
 			,	"tooltip"		=> (array_key_exists("tooltip", $techInfo)) ? $techInfo["tooltip"] : ""
 			,	"cost"			=> (array_key_exists("cost", $techInfo)) ? $techInfo["cost"] : Array()
 			];
@@ -59,8 +58,6 @@ foreach ($g_TechData as $techCode => $techInfo) {
 						"generic"	=> $techInfo["genericName"],
 						"specific"	=> Array()
 					]
-			,	"description"	=> $techInfo["description"]
-			,	"tooltip"		=> $techInfo["tooltip"]
 			,	"icon"			=> $techInfo["icon"]
 			,	"cost"			=> $techInfo["cost"]
 			];
