@@ -25,6 +25,7 @@
 		border-width: 0 1px 1px 0;
 		overflow: scroll;
 		display: block;
+		display: none;
 	}
 	
 	#civSelection {
@@ -37,8 +38,10 @@
 </head>
 
 <body onload="init()">
-	
+
+<pre>
 <?php include('x/treeparse.php'); ?>
+</pre>
 
 <select id="civSelection" onChange="selectCiv(event.explicitOriginalTarget.value); draw3();"></select>
 
