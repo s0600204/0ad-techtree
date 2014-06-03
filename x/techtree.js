@@ -61,7 +61,7 @@ server = {
 				}
 			}
 		}
-		http_request.open('POST', 'http://127.0.0.1:88/0ad/x/treeparse.php', false);
+		http_request.open('POST', 'http://127.0.0.1:88/0ad/x/dataparse.php', false);
 		http_request.send();
 	}
 }
