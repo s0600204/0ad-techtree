@@ -25,22 +25,22 @@ recurseThru("../civs/", "g_CivData");
 foreach ($g_TechData as $techCode => $techInfo) {
 	
 	if (substr($techCode, 0, 4) == "pair") {
-		$g_techPairs[$techCode] = [
+		$g_techPairs[$techCode] = Array(
 				"techs"		=> Array()
 			,	"unlocks"	=> Array()
-			];
+			);
 		
 	
 	} else if (substr($techCode, 0, 5) == "phase") {
-		$g_techPhases[$techCode] = [
-				"name"			=> [
+		$g_techPhases[$techCode] = Array(
+				"name"			=> Array(
 						"generic"	=> $techInfo["genericName"],
 						"specific"	=> Array()
-					]
+					)
 			,	"description"	=> (array_key_exists("description", $techInfo)) ? $techInfo["description"] : ""
 			,	"tooltip"		=> (array_key_exists("tooltip", $techInfo)) ? $techInfo["tooltip"] : ""
 			,	"cost"			=> (array_key_exists("cost", $techInfo)) ? $techInfo["cost"] : Array()
-			];
+			);
 		
 		if (array_key_exists("specificName", $techInfo)) {
 			$g_techPhases[$techCode]["name"]["specific"] = $techInfo["specificName"];
@@ -52,18 +52,18 @@ foreach ($g_TechData as $techCode => $techInfo) {
 	} else {
 		
 		/* Set basic branch information */
-		$g_treeBranches[$techCode] = [
+		$g_treeBranches[$techCode] = Array(
 				"reqs"			=> Array()
 			,	"unlocks"		=> Array()
-			,	"name"			=> [
+			,	"name"			=> Array(
 						"generic"	=> $techInfo["genericName"],
 						"specific"	=> Array()
-					]
+					)
 			,	"description"	=> $techInfo["description"]
 			,	"tooltip"		=> $techInfo["tooltip"]
 			,	"icon"			=> $techInfo["icon"]
 			,	"cost"			=> $techInfo["cost"]
-			];
+			);
 		
 		if (array_key_exists("pair", $techInfo)) {
 			$g_treeBranches[$techCode]["pair"] = $techInfo["pair"];
@@ -84,18 +84,18 @@ foreach ($g_TechData as $techCode => $techInfo) {
 				
 				switch ($op) {
 					case "tech":
-						$g_treeBranches[$techCode]["reqs"]["generic"] = [ $ret ];
+						$g_treeBranches[$techCode]["reqs"]["generic"] = Array( $ret );
 						break;
 					
 					case "civ":
-						$g_treeBranches[$techCode]["reqs"][$ret] = [];
+						$g_treeBranches[$techCode]["reqs"][$ret] = Array();
 						break;
 					
 					case "any":
 						if (count($ret[0]) > 0) {
 							foreach ($ret[0] as $r => $v) {
 								if (is_numeric($r)) {
-									$g_treeBranches[$techCode]["reqs"][$v] = [];
+									$g_treeBranches[$techCode]["reqs"][$v] = Array();
 								} else {
 									$g_treeBranches[$techCode]["reqs"][$r] = $v;
 								}
@@ -121,7 +121,7 @@ foreach ($g_TechData as $techCode => $techInfo) {
 foreach ($g_techPairs as $pair => $data) {
 	$techInfo = $g_TechData[$pair];
 	
-	$g_techPairs[$pair]["techs"] = [$techInfo["top"], $techInfo["bottom"]];
+	$g_techPairs[$pair]["techs"] = Array( $techInfo["top"], $techInfo["bottom"] );
 	
 	if (array_key_exists("supersedes", $techInfo)) {
 		$g_techPairs[$techInfo["supersedes"]]["unlocks"] = $g_techPairs[$pair]["techs"];
@@ -181,7 +181,7 @@ foreach ($g_treeBranches as $techCode => $data) {
 		
 		if (count($g_phaseList) == 0)
 		{
-			$g_phaseList = [ $reqPhase, $myPhase ];
+			$g_phaseList = Array( $reqPhase, $myPhase );
 		}
 		else if ($reqPhasePos === false && $myPhasePos > -1)
 		{
@@ -200,24 +200,24 @@ foreach ($g_treeBranches as $techCode => $data) {
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 foreach ($g_CivData as $civCode => $civInfo) {
-	$g_civs[$civCode] = [
+	$g_civs[$civCode] = Array(
 			"name"			=> $civInfo["Name"]
 		,	"culture"		=> $civInfo["Culture"]
 		,	"emblem"		=> $civInfo["Emblem"]
-		];
+		);
 }
 
 /*
  * Output data
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-echo json_encode([
+echo json_encode(Array(
 		"branches" => $g_treeBranches
 	,	"phases" => $g_techPhases
 	,	"pairs" => $g_techPairs
 	,	"phaseList" => $g_phaseList
 	,	"civs" => $g_civs
-	]);
+	));
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -231,8 +231,8 @@ function calcReqs ($op, $val)
 	
 	case "all":
 	case "any":
-		$t = [];
-		$c = [];
+		$t = Array();
+		$c = Array();
 		foreach ($val as $nv)
 		{
 			foreach ($nv as $o => $v)
@@ -262,7 +262,7 @@ function calcReqs ($op, $val)
 				
 			}
 		}
-		return [$c, $t];
+		return Array( $c, $t );
 	}
 }
 

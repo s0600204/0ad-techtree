@@ -82,8 +82,9 @@ function compileHeads ()
 	
 	console.log("(civ select) Calculating starting points of tree");
 	
-	for (var phase of g_phaseList)
+	for (var phase in g_phaseList)
 	{
+		phase = g_phaseList[phase];
 		g_treeCols[phase] = [ ];
 		g_treeCols[phase][0] = [ ];
 	}
@@ -236,7 +237,8 @@ function populateCivSelect () {
 		});
 	}
 	civList.sort(sortByCultureAndName);
-	for (var civ of civList) {
+	for (var civ in civList) {
+		civ = civList[civ];
 		var newOpt = document.createElement('option');
 		newOpt.text = (civ.code == civ.culture) ? civ.name : " - "+civ.name;
 		newOpt.value = civ.code;
@@ -350,8 +352,9 @@ function draw3 ()
 		}
 		
 		// Recursively draw any techs that depend on the present tech (and its pair if it has one)
-		for (var nextCode of g_treeBranches[techCode].unlocks)
+		for (var nextCode in g_treeBranches[techCode].unlocks)
 		{
+			nextCode = g_treeBranches[techCode].unlocks[nextCode];
 			followBranch(nextCode, myCol);
 		}
 		
@@ -360,16 +363,18 @@ function draw3 ()
 	}
 	
 	// Call above function for each and every tech branch head
-	for (var techCode of g_treeHeads)
+	for (var techCode in g_treeHeads)
 	{
+		techCode = g_treeHeads[techCode];
 		followBranch(techCode, -1);
 	}
 	
 	// Draw the dependancy lines
 	for (var techCode in g_treeBranches)
 	{
-		for (var unlocked of g_treeBranches[techCode].unlocks)
+		for (var unlocked in g_treeBranches[techCode].unlocks)
 		{
+			unlocked = g_treeBranches[techCode].unlocks[unlocked];
 			if (document.getElementById(techCode+'__box') == undefined || document.getElementById(unlocked+'__box') == undefined)
 			{
 				continue;
