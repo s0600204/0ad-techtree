@@ -14,8 +14,8 @@ global $g_civs;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 $GLOBALS['recurse'] = false;
-recurseThru("../simulation/data/technologies/", "g_TechData");
-recurseThru("../civs/", "g_CivData");
+recurseThru("../simulation/data/technologies/", "", "g_TechData");
+recurseThru("../civs/", "", "g_CivData");
 
 
 /*
@@ -24,14 +24,15 @@ recurseThru("../civs/", "g_CivData");
  */
 foreach ($g_TechData as $techCode => $techInfo) {
 	
-	if (substr($techCode, 0, 4) == "pair") {
+	$realCode = depath($techCode);
+	
+	if (substr($realCode, 0, 4) == "pair") {
 		$g_techPairs[$techCode] = Array(
 				"techs"		=> Array()
 			,	"unlocks"	=> Array()
 			);
-		
 	
-	} else if (substr($techCode, 0, 5) == "phase") {
+	} else if (substr($realCode, 0, 5) == "phase") {
 		$g_techPhases[$techCode] = Array(
 				"name"			=> Array(
 						"generic"	=> $techInfo["genericName"],
@@ -59,10 +60,10 @@ foreach ($g_TechData as $techCode => $techInfo) {
 						"generic"	=> $techInfo["genericName"],
 						"specific"	=> Array()
 					)
-			,	"description"	=> $techInfo["description"]
-			,	"tooltip"		=> $techInfo["tooltip"]
-			,	"icon"			=> $techInfo["icon"]
-			,	"cost"			=> $techInfo["cost"]
+			,	"description"	=> (array_key_exists("description", $techInfo)) ? $techInfo["description"] : ""
+			,	"tooltip"		=> (array_key_exists("tooltip", $techInfo)) ? $techInfo["tooltip"] : ""
+			,	"icon"			=> (array_key_exists("icon", $techInfo)) ? $techInfo["icon"] : ""
+			,	"cost"			=> (array_key_exists("cost", $techInfo)) ? $techInfo["cost"] : ""
 			);
 		
 		if (array_key_exists("pair", $techInfo)) {
@@ -126,7 +127,6 @@ foreach ($g_techPairs as $pair => $data) {
 	if (array_key_exists("supersedes", $techInfo)) {
 		$g_techPairs[$techInfo["supersedes"]]["unlocks"] = $g_techPairs[$pair]["techs"];
 	}
-	
 }
 
 /* Reqs, part 2: supersedes */
@@ -135,10 +135,16 @@ foreach ($g_treeBranches as $techCode => $data) {
 	
 	/* Direct tech-to-tech superseding */
 	if (array_key_exists("supersedes", $techInfo)) {
-		if (substr($techInfo["supersedes"], 0, 4) == "pair") { // training_conscription, much?
+		if (substr(depath($techInfo["supersedes"]), 0, 4) == "pair") { // training_conscription, much?
 			$g_techPairs[$techInfo["supersedes"]]["unlocks"][] = $techCode;
 		} else {
-			$g_treeBranches[$techCode]["reqs"]["generic"][] = $techInfo["supersedes"];
+			if (array_key_exists("generic", $g_treeBranches[$techCode]["reqs"])) {
+				$g_treeBranches[$techCode]["reqs"]["generic"][] = $techInfo["supersedes"];
+			} else {
+				foreach (array_keys($g_treeBranches[$techCode]["reqs"]) as $civkey) {
+					$g_treeBranches[$techCode]["reqs"][$civkey][] = $techInfo["supersedes"];
+				}
+			}
 			$g_treeBranches[$techInfo["supersedes"]]["unlocks"][] = $techCode;
 		}
 	}
@@ -150,7 +156,13 @@ foreach ($g_treeBranches as $techCode => $data) {
 			$pair = $g_techPairs[$pair]["unlocks"];
 			$g_treeBranches[$techCode]["unlocks"] = array_merge($g_treeBranches[$techCode]["unlocks"], $pair);
 			foreach ($pair as $tech) {
-				$g_treeBranches[$tech]["reqs"]["generic"][] = $techCode;
+				if (array_key_exists("generic", $g_treeBranches[$tech]["reqs"])) {
+					$g_treeBranches[$tech]["reqs"]["generic"][] = $techCode;
+				} else {
+					foreach (array_keys($g_treeBranches[$tech]["reqs"]) as $civkey) {
+						$g_treeBranches[$tech]["reqs"][$civkey][] = $techCode;
+					}
+				}
 			}
 		} else {
 //			echo $techCode ." is trying to use non-existant ". $pair ." as a pair\n";
@@ -266,26 +278,30 @@ function calcReqs ($op, $val)
 	}
 }
 
-function recurseThru ($path, $store) {
-	$files = scandir($path, 0);
+function recurseThru ($path, $subpath, $store) {
+	$files = scandir($path.$subpath, 0);
 	global $pattern;
 	foreach ($files as $file) {
 		if (substr($file,0,1) == ".") {
 			continue;
 		}
-		if (is_dir($path.$file)) {
+		if (is_dir($path.$subpath.$file)) {
 			if ($GLOBALS['recurse'] == true) {
-				recurseThru($path.$file."/");
+				recurseThru($path, $subpath.$file."/", $store);
 			} else {
 				continue;
 			}
 		} else {
-			if (preg_match("/.json/i", $file) == 1); {
-				$fname = substr($file, 0, strrpos($file, '.'));
-				$GLOBALS[$store][$fname] = json_decode(file_get_contents($path.$file), true);
+			if (preg_match("/.json/i", $file) == 1) {
+				$fname = $subpath . substr($file, 0, strrpos($file, '.'));
+				$GLOBALS[$store][$fname] = json_decode(file_get_contents($path.$subpath.$file), true);
 			}
 		}
 	}
+}
+
+function depath ($str) {
+	return (strpos($str, "/")) ? substr($str, strrpos($str, '/')+1) : $str;
 }
 
 ?>

@@ -88,6 +88,8 @@ function compileHeads ()
 		g_treeCols[phase] = [ ];
 		g_treeCols[phase][0] = [ ];
 	}
+	g_bonuses = [ ];
+	g_treeHeads = [ ];
 	
 	for (var techCode in g_treeBranches)
 	{
@@ -255,11 +257,11 @@ function draw3 ()
 	g_canvas.clear();
 	g_canvasParts["banner"] = g_canvas.group();
 	g_canvasParts["banner"].attr('id', "tree__banner");
+	g_canvasParts["bonus"] = g_canvas.group();
+	g_canvasParts["bonus"].attr('id', "tree__bonus");
 	g_canvasParts["techs"] = g_canvas.group();
-	g_canvasParts["techs"].move(4, 80);
 	g_canvasParts["techs"].attr('id', "tree__techs");
 	g_canvasParts["deplines"] = g_canvas.group();
-	g_canvasParts["deplines"].move(4, 80);
 	g_canvasParts["deplines"].attr('id', "tree__deplines");
 	
 	// Title
@@ -279,11 +281,30 @@ function draw3 ()
 	});
 	
 	var margin = 4;		// margin between techboxes (mainly vertical)
+	var bonusY = 80;
+	
+	// Bonuses
+	if (g_bonuses.length > 0)
+	{
+		var bonusX = window.innerWidth / 2;
+		var wid = (bonusX - 24) / g_bonuses.length;
+		g_canvasParts["bonus"].move(bonusX, 4);
+		for (var bonus in g_bonuses)
+		{
+			var bb = bonusbox((wid+margin)*bonus, margin, wid, g_bonuses[bonus]);
+			if (bb.bbox().height > bonusY)
+			{
+				bonusY = bb.bbox().height + margin * 2;
+			}
+		}
+	}
+	
+	g_canvasParts["techs"].move(4, bonusY);
+	g_canvasParts["deplines"].move(4, bonusY);
+	
 	var wid = 256;		// column width
 	var gap = 64;		// gap between columns
 	var colHei = [ ];	// heights of the columns
-	
-	var techGroup = g_canvas.group();
 	
 	// Set initial column heights and draw phase techs
 	for (var phase in g_treeCols)
@@ -402,7 +423,7 @@ function drawDepLine (techA, techB) {
 	,	'y2': b2.bbox().y2 - b2.bbox().height/2
 	}
 	
-//			var svgline = g_canvasParts["deplines"].line(line.x1, line.y1, line.x2, line.y2).stroke({'width': 1, 'color': '#088'});	// direct line
+//	var svgline = g_canvasParts["deplines"].line(line.x1, line.y1, line.x2, line.y2).stroke({'width': 1, 'color': '#088'});	// direct line
 	var svgline = g_canvasParts["deplines"].path(
 			"M" + line.x1 +","+ line.y1
 		+	"Q" + (line.x1+(line.x2-line.x1)/6) +","+ line.y1 +" "+ (line.x2+line.x1)/2 +","+ (line.y2+line.y1)/2
@@ -423,6 +444,73 @@ function matchTech2Column (techCode)
 			col++;
 		}
 	}
+}
+
+bonusbox = function (x, y, w, tc)
+{
+	if (typeof(tc) !== "string") {
+		return;
+	} else if (tc.slice(0, 5) == "phase") {
+		var techInfo = g_techPhases[tc];
+	} else {
+		var techInfo = g_treeBranches[tc];
+	}
+	x = (typeof(x) !== "number") ? 0 : x;
+	y = (typeof(y) !== "number") ? 0 : y;
+	w = (typeof(w) !== "number") ? 256 : w;
+	
+	this.box = g_canvasParts["bonus"].group();
+	this.box.move(x, y);
+	this.box.attr('id', tc+"__box");
+	
+	this.padding = 2;
+	this.font = 14;
+	
+	this.box_gradient = this.box.gradient('linear', function (stop) {
+		stop.at(0, "#CEE");
+		stop.at(1, "#088");
+	}).from(0,0.25).to(1,0.75);
+	
+	this.box_frame = this.box.rect();
+	this.box_frame.attr({
+		'fill': this.box_gradient
+	,	'fill-opacity': 0.2
+	,	'stroke': '#088'
+	,	'stroke-width': 1
+	,	'width': w
+	,	'height': 64
+	});
+	
+	this.tech_name = this.box.text(techInfo.name.generic);
+	this.tech_name.attr({
+		'fill': '#000'
+	,	'font-size': this.font
+	,	'x': this.padding
+	,	'y': this.padding
+	,	'leading': 1
+	});
+	
+	this.tech_desc = this.box.text(techInfo.description);
+	this.tech_desc.attr({
+		'fill': '#000'
+	,	'font-size': Math.round(this.font * 0.8)
+	,	'x': this.padding
+	,	'y': this.font + this.padding * 2
+	,	'width': w - this.padding * 2
+	,	'leading': 1
+	});
+	this.tech_desc.textWrapped(true);
+	
+	this.box.elems = {
+		'frame': this.box_frame
+	,	'name': this.tech_name
+	,	'desc': this.tech_desc
+	};
+	
+//	console.log(tc +" "+ this.box.bbox().height);
+	this.box_frame.attr('height', Math.round(this.tech_name.bbox().merge(this.tech_desc.bbox()).height)+this.padding);
+	
+	return this.box;
 }
 
 techbox = function (x, y, w, tc)
