@@ -82,11 +82,14 @@ function compileHeads ()
 	
 	console.log("(civ select) Calculating starting points of tree");
 	
-	for (var phase of g_phaseList)
+	for (var phase in g_phaseList)
 	{
+		phase = g_phaseList[phase];
 		g_treeCols[phase] = [ ];
 		g_treeCols[phase][0] = [ ];
 	}
+	g_bonuses = [ ];
+	g_treeHeads = [ ];
 	
 	for (var techCode in g_treeBranches)
 	{
@@ -236,7 +239,8 @@ function populateCivSelect () {
 		});
 	}
 	civList.sort(sortByCultureAndName);
-	for (var civ of civList) {
+	for (var civ in civList) {
+		civ = civList[civ];
 		var newOpt = document.createElement('option');
 		newOpt.text = (civ.code == civ.culture) ? civ.name : " - "+civ.name;
 		newOpt.value = civ.code;
@@ -253,11 +257,11 @@ function draw3 ()
 	g_canvas.clear();
 	g_canvasParts["banner"] = g_canvas.group();
 	g_canvasParts["banner"].attr('id', "tree__banner");
+	g_canvasParts["bonus"] = g_canvas.group();
+	g_canvasParts["bonus"].attr('id', "tree__bonus");
 	g_canvasParts["techs"] = g_canvas.group();
-	g_canvasParts["techs"].move(4, 80);
 	g_canvasParts["techs"].attr('id', "tree__techs");
 	g_canvasParts["deplines"] = g_canvas.group();
-	g_canvasParts["deplines"].move(4, 80);
 	g_canvasParts["deplines"].attr('id', "tree__deplines");
 	
 	// Title
@@ -277,11 +281,30 @@ function draw3 ()
 	});
 	
 	var margin = 4;		// margin between techboxes (mainly vertical)
+	var bonusY = 80;
+	
+	// Bonuses
+	if (g_bonuses.length > 0)
+	{
+		var bonusX = window.innerWidth / 2;
+		var wid = (bonusX - 24) / g_bonuses.length;
+		g_canvasParts["bonus"].move(bonusX, 4);
+		for (var bonus in g_bonuses)
+		{
+			var bb = bonusbox((wid+margin)*bonus, margin, wid, g_bonuses[bonus]);
+			if (bb.bbox().height > bonusY)
+			{
+				bonusY = bb.bbox().height + margin * 2;
+			}
+		}
+	}
+	
+	g_canvasParts["techs"].move(4, bonusY);
+	g_canvasParts["deplines"].move(4, bonusY);
+	
 	var wid = 256;		// column width
 	var gap = 64;		// gap between columns
 	var colHei = [ ];	// heights of the columns
-	
-	var techGroup = g_canvas.group();
 	
 	// Set initial column heights and draw phase techs
 	for (var phase in g_treeCols)
@@ -350,8 +373,9 @@ function draw3 ()
 		}
 		
 		// Recursively draw any techs that depend on the present tech (and its pair if it has one)
-		for (var nextCode of g_treeBranches[techCode].unlocks)
+		for (var nextCode in g_treeBranches[techCode].unlocks)
 		{
+			nextCode = g_treeBranches[techCode].unlocks[nextCode];
 			followBranch(nextCode, myCol);
 		}
 		
@@ -360,16 +384,18 @@ function draw3 ()
 	}
 	
 	// Call above function for each and every tech branch head
-	for (var techCode of g_treeHeads)
+	for (var techCode in g_treeHeads)
 	{
+		techCode = g_treeHeads[techCode];
 		followBranch(techCode, -1);
 	}
 	
 	// Draw the dependancy lines
 	for (var techCode in g_treeBranches)
 	{
-		for (var unlocked of g_treeBranches[techCode].unlocks)
+		for (var unlocked in g_treeBranches[techCode].unlocks)
 		{
+			unlocked = g_treeBranches[techCode].unlocks[unlocked];
 			if (document.getElementById(techCode+'__box') == undefined || document.getElementById(unlocked+'__box') == undefined)
 			{
 				continue;
@@ -397,7 +423,7 @@ function drawDepLine (techA, techB) {
 	,	'y2': b2.bbox().y2 - b2.bbox().height/2
 	}
 	
-//			var svgline = g_canvasParts["deplines"].line(line.x1, line.y1, line.x2, line.y2).stroke({'width': 1, 'color': '#088'});	// direct line
+//	var svgline = g_canvasParts["deplines"].line(line.x1, line.y1, line.x2, line.y2).stroke({'width': 1, 'color': '#088'});	// direct line
 	var svgline = g_canvasParts["deplines"].path(
 			"M" + line.x1 +","+ line.y1
 		+	"Q" + (line.x1+(line.x2-line.x1)/6) +","+ line.y1 +" "+ (line.x2+line.x1)/2 +","+ (line.y2+line.y1)/2
@@ -418,6 +444,62 @@ function matchTech2Column (techCode)
 			col++;
 		}
 	}
+}
+
+bonusbox = function (x, y, w, tc)
+{
+	if (typeof(tc) !== "string") {
+		return;
+	} else if (tc.slice(0, 5) == "phase") {
+		var techInfo = g_techPhases[tc];
+	} else {
+		var techInfo = g_treeBranches[tc];
+	}
+	x = (typeof(x) !== "number") ? 0 : x;
+	y = (typeof(y) !== "number") ? 0 : y;
+	w = (typeof(w) !== "number") ? 256 : w;
+	
+	this.box = g_canvasParts["bonus"].group();
+	this.box.move(x, y);
+	this.box.attr('id', tc+"__box");
+	
+	this.padding = 2;
+	this.font = 14;
+	
+	this.box_gradient = this.box.gradient('linear', function (stop) {
+		stop.at(0, "#CEE");
+		stop.at(1, "#088");
+	}).from(0,0.25).to(1,0.75);
+	
+	this.box_frame = this.box.rect();
+	this.box_frame.attr({
+		'fill': this.box_gradient
+	,	'fill-opacity': 0.2
+	,	'stroke': '#088'
+	,	'stroke-width': 1
+	,	'width': w
+	,	'height': 64
+	});
+	
+	this.tech_name = this.box.text(techInfo.name.generic);
+	this.tech_name.attr({
+		'fill': '#000'
+	,	'font-size': this.font
+	,	'x': this.padding
+	,	'y': this.padding
+	,	'leading': 1
+	});
+	
+	this.box.elems = {
+		'frame': this.box_frame
+	,	'name': this.tech_name
+	,	'desc': this.tech_desc
+	};
+	
+//	console.log(tc +" "+ this.box.bbox().height);
+	this.box_frame.attr('height', Math.round(this.tech_name.bbox().height)+this.padding);
+	
+	return this.box;
 }
 
 techbox = function (x, y, w, tc)
