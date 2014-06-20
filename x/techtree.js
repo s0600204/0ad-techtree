@@ -114,6 +114,11 @@ function compileHeads ()
 				}
 				else
 				{
+					// If this tech is generic, check for a civ specific override
+					if (techCode.indexOf("/") == -1 && hasCivSpecificOverride(techCode)) {
+						continue;
+					}
+					
 					g_treeHeads.push(techCode);
 				}
 			}
@@ -188,6 +193,22 @@ function getReqs (techCode, noPhase)
 	}
 	
 	return reqs;
+}
+
+function hasCivSpecificOverride (techCode)
+{
+	var matches = Object.keys(g_treeBranches).filter(function (code) {
+			return code.indexOf(techCode) > 0;
+		});
+	for (var match in matches)
+	{
+		var civs = Object.keys(g_treeBranches[matches[match]].reqs);
+		if (civs.indexOf(g_selectedCiv) > -1)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 function sortTechByName (a,b)
