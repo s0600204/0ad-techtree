@@ -53,15 +53,18 @@ server = {
 		http_request.onreadystatechange = function () {
 			if (http_request.readyState === 4) {
 				if (http_request.status === 200) {
-//					console.log(http_request.responseText);
-					server.out = JSON.parse(http_request.responseText);
+					try {
+						server.out = JSON.parse(http_request.responseText);
+					} catch (e) {
+						console.log(http_request.responseText);
+					}
 				} else {
 					alert ('There was a problem with the request.');
 					server.out = false;
 				}
 			}
 		}
-		http_request.open('POST', 'http://127.0.0.1:88/0ad/x/dataparse.php', false);
+		http_request.open('POST', 'http://127.0.0.1:88/0ad/techtree/x/dataparse.php', false);
 		http_request.send();
 	}
 }
