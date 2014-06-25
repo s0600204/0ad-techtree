@@ -53,15 +53,18 @@ server = {
 		http_request.onreadystatechange = function () {
 			if (http_request.readyState === 4) {
 				if (http_request.status === 200) {
-//					console.log(http_request.responseText);
-					server.out = JSON.parse(http_request.responseText);
+					try {
+						server.out = JSON.parse(http_request.responseText);
+					} catch (e) {
+						console.log(http_request.responseText);
+					}
 				} else {
 					alert ('There was a problem with the request.');
 					server.out = false;
 				}
 			}
 		}
-		http_request.open('POST', 'http://127.0.0.1:88/0ad/x/dataparse.php', false);
+		http_request.open('POST', 'http://127.0.0.1:88/0ad/techtree/x/dataparse.php', false);
 		http_request.send();
 	}
 }
@@ -114,6 +117,11 @@ function compileHeads ()
 				}
 				else
 				{
+					// If this tech is generic, check for a civ specific override
+					if (techCode.indexOf("/") == -1 && hasCivSpecificOverride(techCode)) {
+						continue;
+					}
+					
 					g_treeHeads.push(techCode);
 				}
 			}
@@ -188,6 +196,22 @@ function getReqs (techCode, noPhase)
 	}
 	
 	return reqs;
+}
+
+function hasCivSpecificOverride (techCode)
+{
+	var matches = Object.keys(g_treeBranches).filter(function (code) {
+			return code.indexOf(techCode) > 0;
+		});
+	for (var match in matches)
+	{
+		var civs = Object.keys(g_treeBranches[matches[match]].reqs);
+		if (civs.indexOf(g_selectedCiv) > -1)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 function sortTechByName (a,b)
