@@ -288,6 +288,10 @@ function draw3 ()
 	g_canvasParts["deplines"] = g_canvas.group();
 	g_canvasParts["deplines"].attr('id', "tree__deplines");
 	
+	g_canvas.gradient('linear', function (stop) {
+		stop.at(0, "#CEE");	stop.at(1, "#088");
+	}).from(0,0.25).to(1,0.75).attr({"id": "gradient__box"});
+	
 	// Title
 	var civEmblem = g_canvasParts["banner"].image("./art/textures/ui/"+g_civs[g_selectedCiv].emblem);
 	civEmblem.attr({
@@ -492,14 +496,9 @@ bonusbox = function (x, y, w, tc)
 	this.font = 14;
 	this.lines = 0;
 	
-	this.box_gradient = this.box.gradient('linear', function (stop) {
-		stop.at(0, "#CEE");
-		stop.at(1, "#088");
-	}).from(0,0.25).to(1,0.75);
-	
 	this.box_frame = this.box.rect();
 	this.box_frame.attr({
-		'fill': this.box_gradient
+		'fill': 'url(#gradient__box)'
 	,	'fill-opacity': 0.2
 	,	'stroke': '#088'
 	,	'stroke-width': 1
@@ -562,15 +561,9 @@ techbox = function (x, y, w, tc)
 	this.lines = 0;
 	this.imgDimen = 32;
 	
-	this.box_gradient = this.box.gradient('linear', function (stop) {
-		stop.at(0, "#CEE");
-		stop.at(1, "#088");
-	}).from(0,0.25).to(1,0.75);
-	
 	this.box_frame = this.box.rect();
 	this.box_frame.attr({
-//		'fill': '#088'
-		'fill': this.box_gradient
+		'fill': 'url(#gradient__box)'
 	,	'fill-opacity': 0.2
 	,	'stroke': '#088'
 	,	'stroke-width': 1
