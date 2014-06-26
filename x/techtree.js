@@ -310,15 +310,15 @@ function draw3 ()
 	// Bonuses
 	if (g_bonuses.length > 0)
 	{
-		var bonusX = window.innerWidth / 2;
-		var wid = (bonusX - 24) / g_bonuses.length;
-		g_canvasParts["bonus"].move(bonusX, 4);
+		var wid = window.innerWidth / 2;
+		g_canvasParts["bonus"].move(wid, 0);
+		wid = (wid - 24) / g_bonuses.length;
 		for (var bonus in g_bonuses)
 		{
 			var bb = bonusbox((wid+margin)*bonus, margin, wid, g_bonuses[bonus]);
-			if (bb.bbox().height > bonusY)
+			if (bb.height+margin > bonusY)
 			{
-				bonusY = bb.bbox().height + margin * 2;
+				bonusY = bb.height + margin;
 			}
 		}
 	}
@@ -345,7 +345,7 @@ function draw3 ()
 		
 		for (var stage in g_treeCols[phase])
 		{
-			colHei.push((pb !== undefined)?pb.bbox().height+margin*2:(gap+wid));
+			colHei.push((pb !== undefined)?pb.height+margin*2:(gap+wid));
 		}
 	}
 	
@@ -368,7 +368,7 @@ function draw3 ()
 		var tb = techbox(((wid+gap)*myCol)+margin, colHei[myCol]+margin, wid, techCode);
 		
 		// 
-		var myHeight = tb.bbox().height + margin;
+		var myHeight = tb.height + margin;
 		
 		// If the tech has a pair, draw them together
 		if (typeof(g_treeBranches[techCode].pair) == "string")
@@ -377,11 +377,12 @@ function draw3 ()
 			if (g_techPairs[techPair] !== undefined)
 			{
 				tb.dy(margin);
+				tb.yM += margin;
 				
 				techPair = g_techPairs[techPair].techs;
 				techPair = (techCode != techPair[0]) ? techPair[0] : techPair[1];
 				tb = techbox(((wid+gap)*myCol)+margin, colHei[myCol]+myHeight+margin*2, wid, techPair);
-				myHeight += tb.bbox().height + margin;
+				myHeight += tb.height + margin;
 				
 				var pairBox = g_canvasParts["techs"].rect();
 				pairBox.attr({
@@ -441,10 +442,10 @@ function drawDepLine (techA, techB) {
 	b2 = document.getElementById(techB+'__box').instance;
 	
 	var line = {
-		'x1': b1.bbox().x2
-	,	'y1': b1.bbox().y2 - b1.bbox().height/2
-	,	'x2': b2.bbox().x
-	,	'y2': b2.bbox().y2 - b2.bbox().height/2
+		'x1': b1.xR
+	,	'y1': b1.yM
+	,	'x2': b2.xL
+	,	'y2': b2.yM
 	}
 	
 //	var svgline = g_canvasParts["deplines"].line(line.x1, line.y1, line.x2, line.y2).stroke({'width': 1, 'color': '#088'});	// direct line
@@ -489,6 +490,7 @@ bonusbox = function (x, y, w, tc)
 	
 	this.padding = 2;
 	this.font = 14;
+	this.lines = 0;
 	
 	this.box_gradient = this.box.gradient('linear', function (stop) {
 		stop.at(0, "#CEE");
@@ -524,6 +526,7 @@ bonusbox = function (x, y, w, tc)
 	,	'leading': 1
 	});
 	this.tech_desc.textWrapped(true);
+	this.lines = this.tech_desc.lines.members.length;
 	
 	this.box.elems = {
 		'frame': this.box_frame
@@ -531,8 +534,8 @@ bonusbox = function (x, y, w, tc)
 	,	'desc': this.tech_desc
 	};
 	
-//	console.log(tc +" "+ this.box.bbox().height);
-	this.box_frame.attr('height', Math.round(this.tech_name.bbox().merge(this.tech_desc.bbox()).height)+this.padding);
+	this.box.height = this.font + Math.round(this.lines * this.font * 0.8) + this.padding * 4;
+	this.box_frame.attr('height', this.box.height);
 	
 	return this.box;
 }
@@ -556,6 +559,8 @@ techbox = function (x, y, w, tc)
 	
 	this.padding = 2;
 	this.font = 14;
+	this.lines = 0;
+	this.imgDimen = 32;
 	
 	this.box_gradient = this.box.gradient('linear', function (stop) {
 		stop.at(0, "#CEE");
@@ -577,15 +582,15 @@ techbox = function (x, y, w, tc)
 	this.tech_image.attr({
 		'x': this.padding
 	,	'y': this.padding
-	,	'height': 32
-	,	'width': 32
+	,	'height': this.imgDimen
+	,	'width': this.imgDimen
 	});
 	
 	this.tech_name = this.box.text(techInfo.name.generic);
 	this.tech_name.attr({
 		'fill': '#000'
 	,	'font-size': this.font
-	,	'x': this.tech_image.width() + this.padding*2
+	,	'x': this.imgDimen + this.padding*2
 	,	'y': this.padding
 	,	'leading': 1
 	});
@@ -614,22 +619,24 @@ techbox = function (x, y, w, tc)
 		'fill': '#088'
 	,	'font-size': Math.round(this.font * 0.8)
 	,	'x': this.padding
-	,	'y': this.tech_image.height() + this.padding
+	,	'y': this.imgDimen + this.padding
 	,	'width': w - this.padding * 2
 	,	'leading': 1
 	});
 	this.tech_tooltip.textWrapped(true);
+	this.lines = this.tech_tooltip.lines.members.length;
 	
 	this.tech_desc = this.box.text(techInfo.description);
 	this.tech_desc.attr({
 		'fill': '#000'
 	,	'font-size': Math.round(this.font * 0.8)
 	,	'x': this.padding
-	,	'y': this.tech_image.height() + this.tech_tooltip.bbox().height
+	,	'y': this.imgDimen + this.padding * 2 + Math.round(this.lines * this.font * 0.8)
 	,	'width': w - this.padding * 2
 	,	'leading': 1
 	});
 	this.tech_desc.textWrapped(true);
+	this.lines += this.tech_desc.lines.members.length;
 	
 	this.box.elems = {
 		'frame': this.box_frame
@@ -640,8 +647,13 @@ techbox = function (x, y, w, tc)
 	,	'cost': this.tech_cost
 	};
 	
-//	console.log(tc +" "+ this.box.bbox().height);
-	this.box_frame.attr('height', Math.round(this.tech_image.bbox().merge(this.tech_desc.bbox()).height)+this.padding);
+	this.box.height = this.imgDimen + Math.round(this.lines * this.font * 0.8) + this.padding * 4;
+	this.box_frame.attr('height', this.box.height);
+	
+	// These are used as co-ords for dependancy lines (xLeft, xRear, yMiddle)
+	this.box.xL = x;
+	this.box.xR = x + w;
+	this.box.yM = y + (this.box.height / 2);
 	
 	return this.box;
 }
