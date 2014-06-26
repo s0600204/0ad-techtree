@@ -1,11 +1,19 @@
 /**
  * @author: Tom Adam - tom@ambitiongroup.com
  * Created on: 07/02/14 19:16
+ * 
+ * @editor: s0600204
+ * Edited on: 2014-06-26 22:46
  *
  * Plugin description:
  * This plugin overrides the SVG.Text object's text and tspan methods.
  * Supports text wrap for a given text width. The plugin basically splits the text based on contained spaces,
  * and tries to do a best possible match for the SVG.Text object's specified width.
+ * 
+ * The plugin has been extended to store character widths and use them to calculate word widths
+ * This is remarkably faster, and no longer requires the SVG.Text to be drawn on screen
+ * This method may not work as the SVG.js library continues to be developed, as it depends heavily on a quirk.
+ * It also will only work in HTML DOM environments
  */
 
 SVG.extend(SVG.Text, {
@@ -80,14 +88,10 @@ SVG.extend(SVG.Text, {
 		},
 
 		_wrapLines: function (textLines) {
-			// Will call the tspan method multiple times...
 			var wrappedLines = [];
-			var tspan = new SVG.TSpan().text(textLines[0]);
-			var node = this.textPath ? this.textPath.node : this.node;
-			node.appendChild(tspan.node);
 			for (var li = 0; li < textLines.length; li++) {
-				tspan.text(textLines[li]);
-				var textWidth = tspan.node.getComputedTextLength();
+				var lineText = textLines[li];
+				var textWidth = this._measureWord(lineText);
 				if (textWidth > this.width()) {
 					/**
 					 * Method to splitt ext into lines.
@@ -95,33 +99,30 @@ SVG.extend(SVG.Text, {
 					 * @param words The array of words - the original text split by ' '
 					 * @returns {Array}
 					 */
-					var splitText = function (testSpan, words) {
-						// Array of strings with acceptable lengths.
+					var splitText = function (words) {
+						// Array of strings
 						var retVal = [];
 						var currentText = "";
-						var computedTextLength = 0;//testSpan.node.getComputedTextLength();
+						var computedTextLength = 0;
 						var i = 0;
 						var oldText = "";
-						testSpan.node.textContent = "";
 						while (i < words.length) {
-							if (testSpan.node.textContent == "") {
-								//New round
-								testSpan.node.textContent = words[i];
+							if (currentText == "") {
+								// New Line
+								currentText = words[i];
 								oldText = words[i];
 							} else {
-								//We are in the middle of the round somewhere.
-								/*var*/
-								oldText = testSpan.node.textContent;
-								testSpan.node.textContent = testSpan.node.textContent + " " + words[i];
-								computedTextLength = testSpan.node.getComputedTextLength();
+								// We are in the middle of a line somewhere.
+								currentText = currentText + " " + words[i];
+								computedTextLength = this._measureWord(currentText);
 								if (computedTextLength > this.width()) {
 									retVal.push(oldText);
 									i--;
-									testSpan.node.textContent = "";
+									currentText = "";
 									oldText = null;
 								}
 								else {
-									oldText = testSpan.node.textContent;
+									oldText = currentText;
 								}
 							}
 							i++;
@@ -131,17 +132,63 @@ SVG.extend(SVG.Text, {
 						return retVal;
 					}
 					// EOF Split text method.
-					var wrappedLines = splitText.call(this, tspan, textLines[li].split(' '));
+					wrappedLines = splitText.call(this, textLines[li].split(' '));
 				}
 				else {
 					// Width defined but fits in!
 					wrappedLines.push(textLines[li]);
 				}
 			}
-			tspan.remove();
-			node.removeChild(tspan.node);
 			return wrappedLines;
 
+		},
+		
+		_charWidths : {},
+		
+		_getRuler: function () {
+			var ruler = document.getElementById("charRuler");
+			if (ruler === null) {
+				ruler = document.getElementById("SvgjsSvg1001").instance;
+				ruler = ruler.text("!").attr({
+					"id": "charRuler",
+					"font-size": this.node.getAttribute("font-size")
+				});
+			} else {
+				ruler = ruler.instance;
+			}
+			return ruler;
+		},
+		
+		_measureChar: function (char) {
+			var tspan = new SVG.TSpan().text(char);
+			var ruler = this._getRuler();
+			
+			ruler.node.appendChild(tspan.node);
+			var ret = tspan.node.getComputedTextLength()
+			ruler.node.removeChild(tspan.node);
+			return ret;
+		},
+		
+		_getCharWidth : function (char) {
+			if (this._charWidths["Cx"+char[0]] === undefined) {
+				if (char[0] === " ") {
+					this._charWidths["Cx"+char[0]] = this._measureChar("."+char[0]+".") - this._measureChar(".")*2;
+				} else {
+					this._charWidths["Cx"+char[0]] = this._measureChar(char[0]);
+				}
+			}
+			return this._charWidths["Cx"+char[0]];
+		},
+		
+		_measureWord: function (word) {
+			var length = 0;
+			for (var c in word) {
+				length += this._getCharWidth(word[c]);
+			}
+			return length;
 		}
+		
+		
+		
 	}
 )
