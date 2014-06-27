@@ -20,8 +20,7 @@
 		height: 512px;
 		border: solid green;
 		border-width: 0 1px 1px 0;
-		overflow: scroll;
-		display: block;
+		display: none;
 	}
 	
 	#civSelect {

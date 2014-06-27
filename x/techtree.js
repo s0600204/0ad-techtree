@@ -72,6 +72,8 @@ server = {
 // Called when user selects civ from dropdown
 function selectCiv(code)
 {
+	document.getElementById('svg_canvas').style.display = "none";
+
 	g_selectedCiv = code;
 	compileHeads ();
 	draw3();
@@ -653,15 +655,13 @@ techbox = function (x, y, w, tc)
 
 function resizeDrawing ()
 {
-//	console.log('(draw) Resizing screen real estate');
+	var canvas_ele = document.getElementById('svg_canvas');
+	canvas_ele.style.display = "block";
 	
 	var bbox = g_canvas.bbox();
-	var canvas_ele = document.getElementById('svg_canvas');
 	
 	canvas_ele.style.width = ((bbox.x2 > window.innerWidth-16) ? Math.round(bbox.x2) + 2 : window.innerWidth-16) + "px";
 	canvas_ele.style.height = ((bbox.y2 > window.innerHeight) ? Math.round(bbox.y2) + 2 : window.innerHeight) + "px";
-	
-//	console.debug("(draw) "+ canvas_ele.style.width +" x "+ canvas_ele.style.height);
 }
 
 
