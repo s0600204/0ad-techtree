@@ -25,24 +25,38 @@ function init(settings)
 {
 	g_canvas = SVG('svg_canvas');
 	
-	server.load();
+	document.getElementById('renderBanner').innerHTML = "Loading Tech Data...";
 	
-	populateCivSelect();
-	
-	selectCiv(document.getElementById('civSelect').value);
-}
-
-// Fetch the data from the server
-server = {
-	out: null,
-	
-	load: function () {
-		server._http_request();
+	server.load(function () {
 		g_treeBranches	= server.out["branches"];
 		g_techPhases	= server.out["phases"];
 		g_techPairs		= server.out["pairs"];
 		g_phaseList		= server.out["phaseList"];
 		g_civs			= server.out["civs"];
+		
+		populateCivSelect();
+		selectCiv(document.getElementById('civSelect').value);
+	});
+}
+
+// Fetch the data from the server
+server = {
+	
+	out: null,
+	
+	userCallback: null,
+	
+	load: function (cb) {
+		if (cb !== undefined && typeof(cb) == "function") {
+			this.userCallback = cb;
+		}
+		this._http_request();
+	},
+	
+	_callback: function () {
+		if (this.userCallback !== null) {
+			this.userCallback();
+		}
 	},
 	
 	_http_request: function () {
@@ -55,6 +69,7 @@ server = {
 				if (http_request.status === 200) {
 					try {
 						server.out = JSON.parse(http_request.responseText);
+						server._callback();
 					} catch (e) {
 						console.log(http_request.responseText);
 					}
@@ -64,7 +79,7 @@ server = {
 				}
 			}
 		}
-		http_request.open('POST', 'http://127.0.0.1:88/0ad/techtree/x/dataparse.php', false);
+		http_request.open('POST', 'http://127.0.0.1:88/0ad/techtree/x/dataparse.php', true);
 		http_request.send();
 	}
 }
@@ -72,8 +87,6 @@ server = {
 // Called when user selects civ from dropdown
 function selectCiv(code)
 {
-	document.getElementById('svg_canvas').style.display = "none";
-
 	g_selectedCiv = code;
 	compileHeads ();
 	draw3();
@@ -272,12 +285,15 @@ function populateCivSelect () {
 		newOpt.value = civ.code;
 		civSelect.appendChild(newOpt);
 	}
+	document.getElementById('civSelect').style.display = "block";
 }
 
 function draw3 ()
 {
-	
 	console.log("(draw) Drawing tech tree.");
+	document.getElementById('renderBanner').innerHTML = "Drawing Technology Tree...";
+	document.getElementById('renderBanner').style.display = "block";
+	g_canvas.node.style.display = "none";
 	
 	// Clear canvas, then establish framework
 	g_canvas.clear();
@@ -440,6 +456,8 @@ function draw3 ()
 		
 	}
 	
+	g_canvas.node.style.display = "block";
+	document.getElementById('renderBanner').style.display = "none";
 	resizeDrawing();
 }
 
@@ -655,13 +673,9 @@ techbox = function (x, y, w, tc)
 
 function resizeDrawing ()
 {
-	var canvas_ele = document.getElementById('svg_canvas');
-	canvas_ele.style.display = "block";
-	
 	var bbox = g_canvas.bbox();
-	
-	canvas_ele.style.width = ((bbox.x2 > window.innerWidth-16) ? Math.round(bbox.x2) + 2 : window.innerWidth-16) + "px";
-	canvas_ele.style.height = ((bbox.y2 > window.innerHeight) ? Math.round(bbox.y2) + 2 : window.innerHeight) + "px";
+	g_canvas.node.style.width = ((bbox.x2 > window.innerWidth-16) ? Math.round(bbox.x2) + 2 : window.innerWidth-16) + "px";
+	g_canvas.node.style.height = ((bbox.y2 > window.innerHeight) ? Math.round(bbox.y2) + 2 : window.innerHeight) + "px";
 }
 
 

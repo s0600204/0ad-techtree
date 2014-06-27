@@ -27,6 +27,15 @@
 		position: fixed;
 		right: 4px;
 		top: 4px;
+		display: none;
+	}
+	
+	#renderBanner {
+		position: fixed;
+		top: 64px;
+		left: 0;
+		right: 0;
+		text-align: center;
 	}
 	
 	</style>
@@ -37,6 +46,8 @@
 <select id="civSelect" onChange="selectCiv(event.target.value);"></select>
 
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" id="svg_canvas"></svg>
+
+<div id="renderBanner">Please wait...</div>
 
 </body>
 </html>
