@@ -13,13 +13,12 @@
 		margin: 0;
 		padding: 0;
 		background: rgb(204, 229, 229);
+		font-family: sans-serif;
 	}
 	
 	#svg_canvas {
 		width: 1024px;
 		height: 512px;
-		border: solid green;
-		border-width: 0 1px 1px 0;
 		display: none;
 	}
 	
@@ -32,10 +31,19 @@
 	
 	#renderBanner {
 		position: fixed;
-		top: 64px;
+		padding: 16px;
+		top: 128px;
 		left: 0;
 		right: 0;
+		color: rgb(0,136,136);
 		text-align: center;
+		border: solid rgb(0,136,136);
+		border-width: 1px 0;
+		background: -webkit-linear-gradient( 0deg, rgba(0,136,136,0.2), rgba(204,238,238,0.2), rgba(0,136,136,0.2));
+		background:    -moz-linear-gradient(90deg, rgba(0,136,136,0.2), rgba(204,238,238,0.2), rgba(0,136,136,0.2));
+		background:     -ms-linear-gradient(90deg, rgba(0,136,136,0.2), rgba(204,238,238,0.2), rgba(0,136,136,0.2));
+		background:      -o-linear-gradient( 0deg, rgba(0,136,136,0.2), rgba(204,238,238,0.2), rgba(0,136,136,0.2));
+		background:         linear-gradient(90deg, rgba(0,136,136,0.2), rgba(204,238,238,0.2), rgba(0,136,136,0.2));
 	}
 	
 	</style>
