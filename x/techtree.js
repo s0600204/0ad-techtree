@@ -25,24 +25,38 @@ function init(settings)
 {
 	g_canvas = SVG('svg_canvas');
 	
-	server.load();
+	document.getElementById('renderBanner').innerHTML = "Loading Tech Data...";
 	
-	populateCivSelect();
-	
-	selectCiv(document.getElementById('civSelect').value);
-}
-
-// Fetch the data from the server
-server = {
-	out: null,
-	
-	load: function () {
-		server._http_request();
+	server.load(function () {
 		g_treeBranches	= server.out["branches"];
 		g_techPhases	= server.out["phases"];
 		g_techPairs		= server.out["pairs"];
 		g_phaseList		= server.out["phaseList"];
 		g_civs			= server.out["civs"];
+		
+		populateCivSelect();
+		selectCiv(document.getElementById('civSelect').value);
+	});
+}
+
+// Fetch the data from the server
+server = {
+	
+	out: null,
+	
+	userCallback: null,
+	
+	load: function (cb) {
+		if (cb !== undefined && typeof(cb) == "function") {
+			this.userCallback = cb;
+		}
+		this._http_request();
+	},
+	
+	_callback: function () {
+		if (this.userCallback !== null) {
+			this.userCallback();
+		}
 	},
 	
 	_http_request: function () {
@@ -55,7 +69,9 @@ server = {
 				if (http_request.status === 200) {
 					try {
 						server.out = JSON.parse(http_request.responseText);
+						server._callback();
 					} catch (e) {
+						document.getElementById('renderBanner').innerHTML = "Hmm... something went wrong. Try again later, and hopefully I'll be fixed!";
 						console.log(http_request.responseText);
 					}
 				} else {
@@ -64,7 +80,7 @@ server = {
 				}
 			}
 		}
-		http_request.open('POST', 'http://127.0.0.1:88/0ad/techtree/x/dataparse.php', false);
+		http_request.open('POST', 'http://127.0.0.1:88/0ad/techtree/x/dataparse.php', true);
 		http_request.send();
 	}
 }
@@ -270,12 +286,15 @@ function populateCivSelect () {
 		newOpt.value = civ.code;
 		civSelect.appendChild(newOpt);
 	}
+	document.getElementById('civSelect').style.display = "block";
 }
 
 function draw3 ()
 {
-	
 	console.log("(draw) Drawing tech tree.");
+	document.getElementById('renderBanner').innerHTML = "Drawing Technology Tree...";
+	document.getElementById('renderBanner').style.display = "block";
+	g_canvas.node.style.display = "none";
 	
 	// Clear canvas, then establish framework
 	g_canvas.clear();
@@ -287,6 +306,10 @@ function draw3 ()
 	g_canvasParts["techs"].attr('id', "tree__techs");
 	g_canvasParts["deplines"] = g_canvas.group();
 	g_canvasParts["deplines"].attr('id', "tree__deplines");
+	
+	g_canvas.gradient('linear', function (stop) {
+		stop.at(0, "#CEE");	stop.at(1, "#088");
+	}).from(0,0.25).to(1,0.75).attr({"id": "gradient__box"});
 	
 	// Title
 	var civEmblem = g_canvasParts["banner"].image("./art/textures/ui/"+g_civs[g_selectedCiv].emblem);
@@ -310,15 +333,15 @@ function draw3 ()
 	// Bonuses
 	if (g_bonuses.length > 0)
 	{
-		var bonusX = window.innerWidth / 2;
-		var wid = (bonusX - 24) / g_bonuses.length;
-		g_canvasParts["bonus"].move(bonusX, 4);
+		var wid = window.innerWidth / 2;
+		g_canvasParts["bonus"].move(wid, 0);
+		wid = (wid - 24) / g_bonuses.length;
 		for (var bonus in g_bonuses)
 		{
 			var bb = bonusbox((wid+margin)*bonus, margin, wid, g_bonuses[bonus]);
-			if (bb.bbox().height > bonusY)
+			if (bb.height+margin > bonusY)
 			{
-				bonusY = bb.bbox().height + margin * 2;
+				bonusY = bb.height + margin;
 			}
 		}
 	}
@@ -345,7 +368,7 @@ function draw3 ()
 		
 		for (var stage in g_treeCols[phase])
 		{
-			colHei.push((pb !== undefined)?pb.bbox().height+margin*2:(gap+wid));
+			colHei.push((pb !== undefined)?pb.height+margin*2:(gap+wid));
 		}
 	}
 	
@@ -368,7 +391,7 @@ function draw3 ()
 		var tb = techbox(((wid+gap)*myCol)+margin, colHei[myCol]+margin, wid, techCode);
 		
 		// 
-		var myHeight = tb.bbox().height + margin;
+		var myHeight = tb.height + margin;
 		
 		// If the tech has a pair, draw them together
 		if (typeof(g_treeBranches[techCode].pair) == "string")
@@ -377,11 +400,12 @@ function draw3 ()
 			if (g_techPairs[techPair] !== undefined)
 			{
 				tb.dy(margin);
+				tb.yM += margin;
 				
 				techPair = g_techPairs[techPair].techs;
 				techPair = (techCode != techPair[0]) ? techPair[0] : techPair[1];
 				tb = techbox(((wid+gap)*myCol)+margin, colHei[myCol]+myHeight+margin*2, wid, techPair);
-				myHeight += tb.bbox().height + margin;
+				myHeight += tb.height + margin;
 				
 				var pairBox = g_canvasParts["techs"].rect();
 				pairBox.attr({
@@ -433,6 +457,8 @@ function draw3 ()
 		
 	}
 	
+	g_canvas.node.style.display = "block";
+	document.getElementById('renderBanner').style.display = "none";
 	resizeDrawing();
 }
 
@@ -441,13 +467,12 @@ function drawDepLine (techA, techB) {
 	b2 = document.getElementById(techB+'__box').instance;
 	
 	var line = {
-		'x1': b1.bbox().x2
-	,	'y1': b1.bbox().y2 - b1.bbox().height/2
-	,	'x2': b2.bbox().x
-	,	'y2': b2.bbox().y2 - b2.bbox().height/2
+		'x1': b1.xR
+	,	'y1': b1.yM
+	,	'x2': b2.xL
+	,	'y2': b2.yM
 	}
 	
-//	var svgline = g_canvasParts["deplines"].line(line.x1, line.y1, line.x2, line.y2).stroke({'width': 1, 'color': '#088'});	// direct line
 	var svgline = g_canvasParts["deplines"].path(
 			"M" + line.x1 +","+ line.y1
 		+	"Q" + (line.x1+(line.x2-line.x1)/6) +","+ line.y1 +" "+ (line.x2+line.x1)/2 +","+ (line.y2+line.y1)/2
@@ -474,8 +499,6 @@ bonusbox = function (x, y, w, tc)
 {
 	if (typeof(tc) !== "string") {
 		return;
-	} else if (tc.slice(0, 5) == "phase") {
-		var techInfo = g_techPhases[tc];
 	} else {
 		var techInfo = g_treeBranches[tc];
 	}
@@ -490,14 +513,9 @@ bonusbox = function (x, y, w, tc)
 	this.padding = 2;
 	this.font = 14;
 	
-	this.box_gradient = this.box.gradient('linear', function (stop) {
-		stop.at(0, "#CEE");
-		stop.at(1, "#088");
-	}).from(0,0.25).to(1,0.75);
-	
 	this.box_frame = this.box.rect();
 	this.box_frame.attr({
-		'fill': this.box_gradient
+		'fill': 'url(#gradient__box)'
 	,	'fill-opacity': 0.2
 	,	'stroke': '#088'
 	,	'stroke-width': 1
@@ -520,8 +538,8 @@ bonusbox = function (x, y, w, tc)
 	,	'desc': this.tech_desc
 	};
 	
-//	console.log(tc +" "+ this.box.bbox().height);
-	this.box_frame.attr('height', Math.round(this.tech_name.bbox().height)+this.padding);
+	this.box.height = this.font + this.padding * 3;
+	this.box_frame.attr('height', this.box.height);
 	
 	return this.box;
 }
@@ -545,16 +563,11 @@ techbox = function (x, y, w, tc)
 	
 	this.padding = 2;
 	this.font = 14;
-	
-	this.box_gradient = this.box.gradient('linear', function (stop) {
-		stop.at(0, "#CEE");
-		stop.at(1, "#088");
-	}).from(0,0.25).to(1,0.75);
+	this.imgDimen = 32;
 	
 	this.box_frame = this.box.rect();
 	this.box_frame.attr({
-//		'fill': '#088'
-		'fill': this.box_gradient
+		'fill': 'url(#gradient__box)'
 	,	'fill-opacity': 0.2
 	,	'stroke': '#088'
 	,	'stroke-width': 1
@@ -566,15 +579,15 @@ techbox = function (x, y, w, tc)
 	this.tech_image.attr({
 		'x': this.padding
 	,	'y': this.padding
-	,	'height': 32
-	,	'width': 32
+	,	'height': this.imgDimen
+	,	'width': this.imgDimen
 	});
 	
 	this.tech_name = this.box.text(techInfo.name.generic);
 	this.tech_name.attr({
 		'fill': '#000'
 	,	'font-size': this.font
-	,	'x': this.tech_image.width() + this.padding*2
+	,	'x': this.imgDimen + this.padding*2
 	,	'y': this.padding
 	,	'leading': 1
 	});
@@ -586,14 +599,19 @@ techbox = function (x, y, w, tc)
 	}
 	
 	this.tech_cost = this.box.group();
-	this.tech_cost.move(this.tech_image.width() + this.padding*2, this.padding*2+this.font);
+	this.tech_cost.move(this.imgDimen + this.padding*2, this.padding*2+this.font);
 	var rcnt = 0;
 	for (res in techInfo.cost)
 	{
 		if (techInfo.cost[res] > 0)
 		{
 			this.tech_cost.image("./art/textures/ui/session/icons/resources/"+res+"_small.png").attr({'x': rcnt*48});
-			this.tech_cost.text(" "+techInfo.cost[res]).attr({'leading':1,'font-size':Math.round(this.font*0.8), 'x': rcnt*48+18, 'y': this.padding});
+			this.tech_cost.text(" "+techInfo.cost[res]).attr({
+				'leading': 1,
+				'font-size': Math.round(this.font * 0.8),
+				'x': rcnt * 48 + 18,
+				'y': this.padding
+			});
 			rcnt++;
 		}
 	}
@@ -605,23 +623,22 @@ techbox = function (x, y, w, tc)
 	,	'cost': this.tech_cost
 	};
 	
-//	console.log(tc +" "+ this.box.bbox().height);
-	this.box_frame.attr('height', Math.round(this.tech_image.bbox().height)+this.padding*2);
+	this.box.height = this.imgDimen + this.padding * 2;
+	this.box_frame.attr('height', this.box.height);
+	
+	// These are used as co-ords for dependancy lines (xLeft, xRear, yMiddle)
+	this.box.xL = x;
+	this.box.xR = x + w;
+	this.box.yM = y + (this.box.height / 2);
 	
 	return this.box;
 }
 
 function resizeDrawing ()
 {
-//	console.log('(draw) Resizing screen real estate');
-	
 	var bbox = g_canvas.bbox();
-	var canvas_ele = document.getElementById('svg_canvas');
-	
-	canvas_ele.style.width = ((bbox.x2 > window.innerWidth-16) ? Math.round(bbox.x2) + 2 : window.innerWidth-16) + "px";
-	canvas_ele.style.height = ((bbox.y2 > window.innerHeight) ? Math.round(bbox.y2) + 2 : window.innerHeight) + "px";
-	
-//	console.debug("(draw) "+ canvas_ele.style.width +" x "+ canvas_ele.style.height);
+	g_canvas.node.style.width = ((bbox.x2 > window.innerWidth-16) ? Math.round(bbox.x2) + 2 : window.innerWidth-16) + "px";
+	g_canvas.node.style.height = ((bbox.y2 > window.innerHeight) ? Math.round(bbox.y2) + 2 : window.innerHeight) + "px";
 }
 
 
