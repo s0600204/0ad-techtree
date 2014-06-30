@@ -71,6 +71,7 @@ server = {
 						server.out = JSON.parse(http_request.responseText);
 						server._callback();
 					} catch (e) {
+						document.getElementById('renderBanner').innerHTML = "Hmm... something went wrong. Try again later, and hopefully I'll be fixed!";
 						console.log(http_request.responseText);
 					}
 				} else {
@@ -472,7 +473,6 @@ function drawDepLine (techA, techB) {
 	,	'y2': b2.yM
 	}
 	
-//	var svgline = g_canvasParts["deplines"].line(line.x1, line.y1, line.x2, line.y2).stroke({'width': 1, 'color': '#088'});	// direct line
 	var svgline = g_canvasParts["deplines"].path(
 			"M" + line.x1 +","+ line.y1
 		+	"Q" + (line.x1+(line.x2-line.x1)/6) +","+ line.y1 +" "+ (line.x2+line.x1)/2 +","+ (line.y2+line.y1)/2
@@ -499,8 +499,6 @@ bonusbox = function (x, y, w, tc)
 {
 	if (typeof(tc) !== "string") {
 		return;
-	} else if (tc.slice(0, 5) == "phase") {
-		var techInfo = g_techPhases[tc];
 	} else {
 		var techInfo = g_treeBranches[tc];
 	}
@@ -615,14 +613,19 @@ techbox = function (x, y, w, tc)
 	}
 	
 	this.tech_cost = this.box.group();
-	this.tech_cost.move(this.tech_image.width() + this.padding*2, this.padding*2+this.font);
+	this.tech_cost.move(this.imgDimen + this.padding*2, this.padding*2+this.font);
 	var rcnt = 0;
 	for (res in techInfo.cost)
 	{
 		if (techInfo.cost[res] > 0)
 		{
 			this.tech_cost.image("./art/textures/ui/session/icons/resources/"+res+"_small.png").attr({'x': rcnt*48});
-			this.tech_cost.text(" "+techInfo.cost[res]).attr({'leading':1,'font-size':Math.round(this.font*0.8), 'x': rcnt*48+18, 'y': this.padding});
+			this.tech_cost.text(" "+techInfo.cost[res]).attr({
+				'leading': 1,
+				'font-size': Math.round(this.font * 0.8),
+				'x': rcnt * 48 + 18,
+				'y': this.padding
+			});
 			rcnt++;
 		}
 	}
