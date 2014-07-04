@@ -43,19 +43,28 @@ function init(settings)
 server = {
 	
 	out: null,
-	
+	serverArgs: null,
 	userCallback: null,
 	
 	load: function (cb) {
 		if (cb !== undefined && typeof(cb) == "function") {
 			this.userCallback = cb;
 		}
+		this._populateArgs();
 		this._http_request();
 	},
 	
 	_callback: function () {
 		if (this.userCallback !== null) {
 			this.userCallback();
+		}
+	},
+	
+	_populateArgs: function () {
+		this.serverArgs = new FormData();
+		for (var arg in g_args)
+		{
+			this.serverArgs.append(arg, g_args[arg]);
 		}
 	},
 	
@@ -81,7 +90,7 @@ server = {
 			}
 		}
 		http_request.open('POST', 'http://127.0.0.1:88/0ad/techtree/x/dataparse.php', true);
-		http_request.send();
+		http_request.send(this.serverArgs);
 	}
 }
 

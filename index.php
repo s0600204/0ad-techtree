@@ -8,6 +8,23 @@
 	<script src="x/svg.min.js"></script>
 	<script src="x/svg.textwrap.js"></script>
 	
+	<script>
+<?php
+	$args = Array(
+	);
+	foreach ($_GET as $arg => $val) {
+		$arg = strtolower($arg);
+		switch ($arg)
+		{
+			
+		}
+	}
+	foreach ($args as $arg => $val) {
+		echo "\tvar g_args = " . JSON_encode($args) . "\n";
+	}
+?>
+	</script>
+	
 	<style>
 	body {
 		margin: 0;
