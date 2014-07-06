@@ -9,10 +9,14 @@ global $g_phaseList;
 global $g_CivData;
 global $g_civs;
 
+global $g_ModData;
+global $g_mods;
 global $g_usedMods;
+
 
 /*
  * Load arguments
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 if ($_POST['mod'] === "") {
 	$g_usedMods = Array("0ad");
@@ -24,6 +28,7 @@ if ($_POST['mod'] === "") {
 		$g_usedMods[] = "0ad";
 	}
 }
+
 
 /*
  * Load data from JSON
@@ -38,6 +43,13 @@ foreach ($g_usedMods as $mod) {
 	}
 	if (file_exists($civpath)) {
 		recurseThru($civpath, "", "g_CivData", $mod);
+	}
+}
+
+$g_ModData = Array();
+foreach (scandir("../mods", 0) as $fsp) {
+	if (is_dir("../mods/".$fsp) && file_exists("../mods/".$fsp."/mod.json")) {
+		$g_ModData[$fsp] = json_decode(file_get_contents("../mods/".$fsp."/mod.json"), true);
 	}
 }
 
@@ -233,6 +245,7 @@ foreach ($g_treeBranches as $techCode => $data) {
 	
 }
 
+
 /*
  * Parse Data : Civs
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -246,9 +259,24 @@ foreach ($g_CivData as $civCode => $civInfo) {
 		);
 }
 
+
+/*
+ * Parse Data : Available Mods
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ */
+foreach ($g_ModData as $modCode => $modInfo) {
+	$g_mods[$modCode] = Array(
+			"name"			=> $modInfo["name"]
+		,	"label"			=> $modInfo["label"]
+		,	"code"			=> $modCode
+		,	"type"			=> $modInfo["type"]
+		);
+}
+
+
 /*
  * Output data
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 echo json_encode(Array(
 		"branches" => $g_treeBranches
@@ -256,9 +284,12 @@ echo json_encode(Array(
 	,	"pairs" => $g_techPairs
 	,	"phaseList" => $g_phaseList
 	,	"civs" => $g_civs
+	,	"availMods" => $g_mods
 	));
 
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 
 function calcReqs ($op, $val)
 {
@@ -314,7 +345,7 @@ function recurseThru ($path, $subpath, $store, $mod) {
 		}
 		if (is_dir($path.$subpath.$file)) {
 			if ($GLOBALS['recurse'] == true) {
-				recurseThru($path, $subpath.$file."/", $store);
+				recurseThru($path, $subpath.$file."/", $store, $mod);
 			} else {
 				continue;
 			}
@@ -343,8 +374,7 @@ function loadDependencies ($modName) {
 	if (file_exists($modpath)) {
 		$modData = JSON_decode(file_get_contents($modpath), true);
 		foreach ($modData["dependencies"] as $mod) {
-			$mod = explode(" ", $mod)[0];
-		//	$mod = substr($mod, 0, (strpos($mod, " ") ? strpos($mod) : strlen($mod))); // alternate method to the line above
+			$mod = explode("=", $mod)[0];
 			if (!in_array($mod, $g_usedMods) && loadDependencies($mod)) {
 				$g_usedMods[] = $mod;
 			}

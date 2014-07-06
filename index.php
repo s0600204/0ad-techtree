@@ -34,6 +34,7 @@
 		padding: 0;
 		background: rgb(204, 229, 229);
 		font-family: sans-serif;
+		font-size: 16px;
 	}
 	
 	#svg_canvas {
@@ -42,15 +43,27 @@
 		display: none;
 	}
 	
-	#civSelect {
+	div {
 		position: fixed;
+	}
+	
+	#modSelectDiv, #civSelectDiv {
+		font-size: 0.8em;
+	}
+	
+	#modSelectDiv {
 		right: 4px;
 		top: 4px;
 		display: none;
 	}
 	
+	#civSelectDiv {
+		right: 4px;
+		top: 28px;
+		display: none;
+	}
+	
 	#renderBanner {
-		position: fixed;
 		padding: 16px;
 		top: 128px;
 		left: 0;
@@ -71,7 +84,14 @@
 
 <body onload="init()">
 
-<select id="civSelect" onChange="selectCiv(event.target.value);"></select>
+<div id="modSelectDiv">
+	Mod :
+	<select id="modSelect" onChange="selectMod(event.target.value);"></select>
+</div>
+<div id="civSelectDiv">
+	Civ :
+	<select id="civSelect" onChange="selectCiv(event.target.value);"></select>
+</div>
 
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" id="svg_canvas"></svg>
 

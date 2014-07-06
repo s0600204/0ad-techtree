@@ -11,6 +11,7 @@ var g_techPhases;	// { }
 var g_techPairs;	// { }
 var g_phaseList;	// [ ]
 var g_civs;			// { }
+var g_availMods;	// { }
 
 // User Input
 var g_selectedCiv;	// " "
@@ -33,7 +34,9 @@ function init(settings)
 		g_techPairs		= server.out["pairs"];
 		g_phaseList		= server.out["phaseList"];
 		g_civs			= server.out["civs"];
+		g_availMods		= server.out["availMods"];
 		
+		populateModSelect();
 		populateCivSelect();
 		selectCiv(document.getElementById('civSelect').value);
 	});
@@ -277,6 +280,46 @@ function getPhaseTech (phase) {
 	}
 }
 
+function populateModSelect () {
+	var modSelect = document.getElementById('modSelect');
+	
+	var newOpt = document.createElement('option');
+	newOpt.text = "0AD : Empires Ascendant";
+	newOpt.value = "0ad";
+	modSelect.appendChild(newOpt);
+	
+	for (var mod in g_availMods)
+	{
+		mod = g_availMods[mod];
+		newOpt = document.createElement('option');
+		newOpt.text = mod.name;// + " (" + mod.type + ")";
+		newOpt.value = mod.code;
+		if (g_args.mod !== null && mod.code == g_args.mod) {
+			newOpt.selected = true;
+		}
+		modSelect.appendChild(newOpt);
+	}
+	
+	document.getElementById('modSelectDiv').style.display = "block";
+}
+
+function selectMod (modCode) {
+	paras = window.location.search;
+	if (paras == "") {
+		paras = "?"+"mod"+"="+modCode;
+	} else {
+		pos = paras.indexOf("mod=");
+		if (pos == -1) {
+			paras += "&mod="+modCode;
+		} else {
+			end = paras.indexOf("&", pos);
+			if (end == -1) { end = paras.length; }
+			paras = paras.slice(0, pos) + "mod="+modCode + paras.slice(end);
+		}
+	}
+	window.location = paras;
+}
+
 function populateCivSelect () {
 	var civList = [];
 	var civSelect = document.getElementById('civSelect');
@@ -295,7 +338,7 @@ function populateCivSelect () {
 		newOpt.value = civ.code;
 		civSelect.appendChild(newOpt);
 	}
-	document.getElementById('civSelect').style.display = "block";
+	document.getElementById('civSelectDiv').style.display = "block";
 }
 
 function draw3 ()
@@ -342,9 +385,9 @@ function draw3 ()
 	// Bonuses
 	if (g_bonuses.length > 0)
 	{
-		var wid = window.innerWidth / 2;
+		var wid = window.innerWidth / 3;
 		g_canvasParts["bonus"].move(wid, 0);
-		wid = (wid - 24) / g_bonuses.length;
+		wid = (wid*2 - window.innerWidth/4) / g_bonuses.length;
 		for (var bonus in g_bonuses)
 		{
 			var bb = bonusbox((wid+margin)*bonus, margin, wid, g_bonuses[bonus]);
