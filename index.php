@@ -17,7 +17,9 @@
 		$arg = strtolower($arg);
 		switch ($arg)
 		{
-			
+			case "mod":
+				$args["mod"] = $val;
+				break;
 		}
 	}
 	foreach ($args as $arg => $val) {

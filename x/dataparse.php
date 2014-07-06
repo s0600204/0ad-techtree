@@ -9,17 +9,20 @@ global $g_phaseList;
 global $g_CivData;
 global $g_civs;
 
-global $g_ModData;
-global $g_mods;
+global $g_usedMods;
 
 /*
  * Load arguments
  */
 if ($_POST['mod'] === "") {
-	$g_mods = Array("0ad");
+	$g_usedMods = Array("0ad");
 } else {
-	$g_ModData = JSON_decode(file_get_contents("../mods/" . $_POST['mod'] . "/mod.json"), true);
-	$g_mods = $g_ModData["dependencies"];
+	$g_usedMods = Array();
+	if (loadDependencies($_POST['mod'])) {
+		$g_usedMods[] = $_POST['mod'];
+	} else {
+		$g_usedMods[] = "0ad";
+	}
 }
 
 /*
@@ -27,11 +30,15 @@ if ($_POST['mod'] === "") {
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 $GLOBALS['recurse'] = false;
-foreach ($g_mods as $mod) {
-	$mod = explode(" ", $mod)[0];
-//	$mod = substr($mod, 0, (strpos($mod, " ") ? strpos($mod) : strlen($mod))); // alternate method
-	recurseThru("../mods/".$mod."/simulation/data/technologies/", "", "g_TechData", $mod);
-	recurseThru("../mods/".$mod."/civs/", "", "g_CivData", $mod);
+foreach ($g_usedMods as $mod) {
+	$techpath = "../mods/".$mod."/simulation/data/technologies/";
+	$civpath = "../mods/".$mod."/civs/";
+	if (file_exists($techpath)) {
+		recurseThru($techpath, "", "g_TechData", $mod);
+	}
+	if (file_exists($civpath)) {
+		recurseThru($civpath, "", "g_CivData", $mod);
+	}
 }
 
 
@@ -314,8 +321,13 @@ function recurseThru ($path, $subpath, $store, $mod) {
 		} else {
 			if (preg_match("/.json/i", $file) == 1) {
 				$fname = $subpath . substr($file, 0, strrpos($file, '.'));
-				$GLOBALS[$store][$fname] = json_decode(file_get_contents($path.$subpath.$file), true);
-				$GLOBALS[$store][$fname]["mod"] = $mod;
+				$fcontents = json_decode(file_get_contents($path.$subpath.$file), true);
+				if ($fcontents !== NULL) {
+					$GLOBALS[$store][$fname] = $fcontents;
+					$GLOBALS[$store][$fname]["mod"] = $mod;
+				} else {
+				//	echo $path.$subpath.$file . " is not a valid JSON file!\n";
+				}
 			}
 		}
 	}
@@ -323,6 +335,26 @@ function recurseThru ($path, $subpath, $store, $mod) {
 
 function depath ($str) {
 	return (strpos($str, "/")) ? substr($str, strrpos($str, '/')+1) : $str;
+}
+
+function loadDependencies ($modName) {
+	global $g_usedMods;
+	$modpath = "../mods/" . $modName . "/mod.json";
+	if (file_exists($modpath)) {
+		$modData = JSON_decode(file_get_contents($modpath), true);
+		foreach ($modData["dependencies"] as $mod) {
+			$mod = explode(" ", $mod)[0];
+		//	$mod = substr($mod, 0, (strpos($mod, " ") ? strpos($mod) : strlen($mod))); // alternate method to the line above
+			if (!in_array($mod, $g_usedMods) && loadDependencies($mod)) {
+				$g_usedMods[] = $mod;
+			}
+		}
+		return true;
+	} else if ($modName == "0ad") {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 ?>
