@@ -11,6 +11,7 @@
 	<script>
 <?php
 	$args = Array(
+		'mod' => ''
 	);
 	foreach ($_GET as $arg => $val) {
 		$arg = strtolower($arg);

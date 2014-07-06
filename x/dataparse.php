@@ -9,13 +9,30 @@ global $g_phaseList;
 global $g_CivData;
 global $g_civs;
 
+global $g_ModData;
+global $g_mods;
+
+/*
+ * Load arguments
+ */
+if ($_POST['mod'] === "") {
+	$g_mods = Array("0ad");
+} else {
+	$g_ModData = JSON_decode(file_get_contents("../mods/" . $_POST['mod'] . "/mod.json"), true);
+	$g_mods = $g_ModData["dependencies"];
+}
+
 /*
  * Load data from JSON
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 $GLOBALS['recurse'] = false;
-recurseThru("../simulation/data/technologies/", "", "g_TechData");
-recurseThru("../civs/", "", "g_CivData");
+foreach ($g_mods as $mod) {
+	$mod = explode(" ", $mod)[0];
+//	$mod = substr($mod, 0, (strpos($mod, " ") ? strpos($mod) : strlen($mod))); // alternate method
+	recurseThru("../mods/".$mod."/simulation/data/technologies/", "", "g_TechData", $mod);
+	recurseThru("../mods/".$mod."/civs/", "", "g_CivData", $mod);
+}
 
 
 /*
@@ -41,6 +58,7 @@ foreach ($g_TechData as $techCode => $techInfo) {
 			,	"description"	=> (array_key_exists("description", $techInfo)) ? $techInfo["description"] : ""
 			,	"tooltip"		=> (array_key_exists("tooltip", $techInfo)) ? $techInfo["tooltip"] : ""
 			,	"cost"			=> (array_key_exists("cost", $techInfo)) ? $techInfo["cost"] : Array()
+			,	"sourceMod"		=> $techInfo["mod"]
 			);
 		
 		if (array_key_exists("specificName", $techInfo)) {
@@ -64,6 +82,7 @@ foreach ($g_TechData as $techCode => $techInfo) {
 			,	"tooltip"		=> (array_key_exists("tooltip", $techInfo)) ? $techInfo["tooltip"] : ""
 			,	"icon"			=> (array_key_exists("icon", $techInfo)) ? $techInfo["icon"] : ""
 			,	"cost"			=> (array_key_exists("cost", $techInfo)) ? $techInfo["cost"] : ""
+			,	"sourceMod"		=> $techInfo["mod"]
 			);
 		
 		if (array_key_exists("pair", $techInfo)) {
@@ -216,6 +235,7 @@ foreach ($g_CivData as $civCode => $civInfo) {
 			"name"			=> $civInfo["Name"]
 		,	"culture"		=> $civInfo["Culture"]
 		,	"emblem"		=> $civInfo["Emblem"]
+		,	"sourceMod"		=> $civInfo["mod"]
 		);
 }
 
@@ -278,7 +298,7 @@ function calcReqs ($op, $val)
 	}
 }
 
-function recurseThru ($path, $subpath, $store) {
+function recurseThru ($path, $subpath, $store, $mod) {
 	$files = scandir($path.$subpath, 0);
 	global $pattern;
 	foreach ($files as $file) {
@@ -295,6 +315,7 @@ function recurseThru ($path, $subpath, $store) {
 			if (preg_match("/.json/i", $file) == 1) {
 				$fname = $subpath . substr($file, 0, strrpos($file, '.'));
 				$GLOBALS[$store][$fname] = json_decode(file_get_contents($path.$subpath.$file), true);
+				$GLOBALS[$store][$fname]["mod"] = $mod;
 			}
 		}
 	}

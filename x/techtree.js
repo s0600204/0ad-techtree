@@ -321,7 +321,7 @@ function draw3 ()
 	}).from(0,0.25).to(1,0.75).attr({"id": "gradient__box"});
 	
 	// Title
-	var civEmblem = g_canvasParts["banner"].image("./art/textures/ui/"+g_civs[g_selectedCiv].emblem);
+	var civEmblem = g_canvasParts["banner"].image("./mods/"+g_civs[g_selectedCiv].sourceMod+"/art/textures/ui/"+g_civs[g_selectedCiv].emblem);
 	civEmblem.attr({
 		'x': 4
 	,	'y': 4
@@ -598,7 +598,7 @@ techbox = function (x, y, w, tc)
 	,	'height': 64
 	});
 	
-	this.tech_image = this.box.image("./art/textures/ui/session/portraits/technologies/" + techInfo.icon);
+	this.tech_image = this.box.image("./mods/"+ techInfo.sourceMod +"/art/textures/ui/session/portraits/technologies/"+ techInfo.icon);
 	this.tech_image.attr({
 		'x': this.padding
 	,	'y': this.padding
@@ -628,7 +628,7 @@ techbox = function (x, y, w, tc)
 	{
 		if (techInfo.cost[res] > 0)
 		{
-			this.tech_cost.image("./art/textures/ui/session/icons/resources/"+res+"_small.png").attr({'x': rcnt*48});
+			this.tech_cost.image("./mods/0ad/art/textures/ui/session/icons/resources/"+res+"_small.png").attr({'x': rcnt*48});
 			this.tech_cost.text(" "+techInfo.cost[res]).attr({
 				'leading': 1,
 				'font-size': Math.round(this.font * 0.8),
