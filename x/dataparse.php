@@ -22,13 +22,15 @@ if ($_POST['mod'] === "") {
 	$g_usedMods = Array("0ad");
 } else {
 	$g_usedMods = Array();
-	if (loadDependencies($_POST['mod'])) {
-		$g_usedMods[] = $_POST['mod'];
-	} else {
+	foreach ($_POST['mod'] as $mod) {
+		if (!in_array($mod, $g_usedMods) && loadDependencies($mod)) {
+			$g_usedMods[] = $mod;
+		}
+	}
+	if (count($g_usedMods) == 0) {
 		$g_usedMods[] = "0ad";
 	}
 }
-
 
 /*
  * Load data from JSON

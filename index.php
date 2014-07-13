@@ -23,7 +23,7 @@
 		}
 	}
 	foreach ($args as $arg => $val) {
-		echo "\tvar g_args = " . JSON_encode($args) . "\n";
+		echo "\tvar g_args = " . JSON_encode($args) . ";\n";
 	}
 ?>
 	</script>

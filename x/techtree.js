@@ -67,7 +67,13 @@ server = {
 		this.serverArgs = new FormData();
 		for (var arg in g_args)
 		{
-			this.serverArgs.append(arg, g_args[arg]);
+			if (Array.isArray(g_args[arg])) {
+				for (var subArg in g_args[arg]) {
+					this.serverArgs.append(arg+"[]", g_args[arg][subArg]);
+				}
+			} else {
+				this.serverArgs.append(arg, g_args[arg]);
+			}
 		}
 	},
 	
@@ -306,15 +312,15 @@ function populateModSelect () {
 function selectMod (modCode) {
 	paras = window.location.search;
 	if (paras == "") {
-		paras = "?"+"mod"+"="+modCode;
+		paras = "?"+"mod[]"+"="+modCode;
 	} else {
-		pos = paras.indexOf("mod=");
+		pos = paras.indexOf("mod[]=");
 		if (pos == -1) {
-			paras += "&mod="+modCode;
+			paras += "&mod[]="+modCode;
 		} else {
 			end = paras.indexOf("&", pos);
 			if (end == -1) { end = paras.length; }
-			paras = paras.slice(0, pos) + "mod="+modCode + paras.slice(end);
+			paras = paras.slice(0, pos) + "mod[]="+modCode + paras.slice(end);
 		}
 	}
 	window.location = paras;
