@@ -11,6 +11,7 @@ var g_techPhases;	// { }
 var g_techPairs;	// { }
 var g_phaseList;	// [ ]
 var g_civs;			// { }
+var g_availMods;	// { }
 
 // User Input
 var g_selectedCiv;	// " "
@@ -33,7 +34,9 @@ function init(settings)
 		g_techPairs		= server.out["pairs"];
 		g_phaseList		= server.out["phaseList"];
 		g_civs			= server.out["civs"];
+		g_availMods		= server.out["availMods"];
 		
+		populateModSelect();
 		populateCivSelect();
 		selectCiv(document.getElementById('civSelect').value);
 	});
@@ -43,19 +46,34 @@ function init(settings)
 server = {
 	
 	out: null,
-	
+	serverArgs: null,
 	userCallback: null,
 	
 	load: function (cb) {
 		if (cb !== undefined && typeof(cb) == "function") {
 			this.userCallback = cb;
 		}
+		this._populateArgs();
 		this._http_request();
 	},
 	
 	_callback: function () {
 		if (this.userCallback !== null) {
 			this.userCallback();
+		}
+	},
+	
+	_populateArgs: function () {
+		this.serverArgs = new FormData();
+		for (var arg in g_args)
+		{
+			if (Array.isArray(g_args[arg])) {
+				for (var subArg in g_args[arg]) {
+					this.serverArgs.append(arg+"[]", g_args[arg][subArg]);
+				}
+			} else {
+				this.serverArgs.append(arg, g_args[arg]);
+			}
 		}
 	},
 	
@@ -81,13 +99,17 @@ server = {
 			}
 		}
 		http_request.open('POST', 'http://127.0.0.1:88/0ad/techtree/x/dataparse.php', true);
-		http_request.send();
+		http_request.send(this.serverArgs);
 	}
 }
 
 // Called when user selects civ from dropdown
 function selectCiv(code)
 {
+	if (document.getElementById('modDiv').style.display == "block") {
+		document.getElementById('modDiv').style.display = "none";
+	}
+	
 	g_selectedCiv = code;
 	compileHeads ();
 	draw3();
@@ -268,6 +290,104 @@ function getPhaseTech (phase) {
 	}
 }
 
+function populateModSelect () {
+	var modSelect = document.getElementById('modSelect');
+	
+	var tpltCheck = document.createElement('input');
+	var tpltLabel = document.createElement('label');
+	var tpltBR = document.createElement('br');
+	tpltCheck.type = "checkbox";
+	
+	for (var mod in g_availMods)
+	{
+		mod = g_availMods[mod];
+		
+		// This follows the spec in the 0ad mod selector code
+		// type: "content"|"functionality"|"mixed/mod-pack"
+		if (mod.type.indexOf("functionality") > -1) {
+			continue;
+		}
+		
+		var newCheck = tpltCheck.cloneNode();
+		newCheck.id = "mod__"+mod.code;
+		newCheck.value = mod.code;
+		
+		var newLabel = tpltLabel.cloneNode();
+		newLabel.innerHTML = mod.label + " (<i>" + mod.name + "</i>)"; //+ " [" + mod.type + "]";
+		newLabel.setAttribute("for", "mod__"+mod.code);
+		
+		if (g_args.mod !== null && g_args.mod.indexOf(mod.code) > -1) {
+			newCheck.checked = true;
+		}
+		
+		modSelect.appendChild(newCheck);
+		modSelect.appendChild(newLabel);
+		modSelect.appendChild(tpltBR.cloneNode());
+	}
+}
+
+function toggleModSelect () {
+	var modDiv = document.getElementById('modDiv');
+	if (window.getComputedStyle(modDiv).display === "none") {
+		modDiv.style.display = "block";
+	} else {
+		modDiv.style.display = "none";
+	}
+}
+
+function readModSelect () {
+	var modOpts = document.getElementById('modSelect').childNodes;
+	var modSelection = [];
+	for (var ele=0; modOpts.length > ele; ele++) {
+		if (modOpts[ele].nodeType == 1) {
+			if (modOpts[ele].type == "checkbox" && modOpts[ele].checked == true) {
+				modSelection.push(modOpts[ele].value);
+			}
+		}
+	}
+	return modSelection;
+}
+
+function clearModSelect () {
+	var modOpts = document.getElementById('modSelect').childNodes;
+	for (var ele=0; modOpts.length > ele; ele++) {
+		if (modOpts[ele].nodeType == 1) {
+			if (modOpts[ele].type == "checkbox") {
+				modOpts[ele].checked = false;
+			}
+		}
+	}
+}
+
+function selectMod () {
+	var modSelection = readModSelect();
+	
+	var modString = "";
+	for (var mod in modSelection) {
+		modString += "mod[]=" + modSelection[mod] + "&";
+	}
+	modString = modString.slice(0, -1);
+	
+	var paras = window.location.search;
+	if (paras == "") {
+		paras = "?" + modString;
+	} else {
+		while (pos = paras.indexOf("mod") > -1) {
+			var pos = paras.indexOf("mod");
+			var end = paras.indexOf("&", pos);
+			end = (end == -1) ? end = paras.length : end + 1;
+			paras = paras.slice(0, pos) + paras.slice(end);
+		}
+		if (modString.length > 1) {
+			if (paras.length > 1) {
+				paras += "&";
+			}
+			paras += modString;
+		}
+	}
+	window.location = paras;
+}
+
 function populateCivSelect () {
 	var civList = [];
 	var civSelect = document.getElementById('civSelect');
@@ -286,7 +406,7 @@ function populateCivSelect () {
 		newOpt.value = civ.code;
 		civSelect.appendChild(newOpt);
 	}
-	document.getElementById('civSelect').style.display = "block";
+	document.getElementById('selectDiv').style.display = "block";
 }
 
 function draw3 ()
@@ -312,7 +432,7 @@ function draw3 ()
 	}).from(0,0.25).to(1,0.75).attr({"id": "gradient__box"});
 	
 	// Title
-	var civEmblem = g_canvasParts["banner"].image("./art/textures/ui/"+g_civs[g_selectedCiv].emblem);
+	var civEmblem = g_canvasParts["banner"].image("./mods/"+g_civs[g_selectedCiv].sourceMod+"/art/textures/ui/"+g_civs[g_selectedCiv].emblem);
 	civEmblem.attr({
 		'x': 4
 	,	'y': 4
@@ -333,9 +453,9 @@ function draw3 ()
 	// Bonuses
 	if (g_bonuses.length > 0)
 	{
-		var wid = window.innerWidth / 2;
+		var wid = window.innerWidth / 3;
 		g_canvasParts["bonus"].move(wid, 0);
-		wid = (wid - 24) / g_bonuses.length;
+		wid = (wid*2 - window.innerWidth/4) / g_bonuses.length;
 		for (var bonus in g_bonuses)
 		{
 			var bb = bonusbox((wid+margin)*bonus, margin, wid, g_bonuses[bonus]);
@@ -575,7 +695,7 @@ techbox = function (x, y, w, tc)
 	,	'height': 64
 	});
 	
-	this.tech_image = this.box.image("./art/textures/ui/session/portraits/technologies/" + techInfo.icon);
+	this.tech_image = this.box.image("./mods/"+ techInfo.sourceMod +"/art/textures/ui/session/portraits/technologies/"+ techInfo.icon);
 	this.tech_image.attr({
 		'x': this.padding
 	,	'y': this.padding
@@ -605,7 +725,7 @@ techbox = function (x, y, w, tc)
 	{
 		if (techInfo.cost[res] > 0)
 		{
-			this.tech_cost.image("./art/textures/ui/session/icons/resources/"+res+"_small.png").attr({'x': rcnt*48});
+			this.tech_cost.image("./mods/0ad/art/textures/ui/session/icons/resources/"+res+"_small.png").attr({'x': rcnt*48});
 			this.tech_cost.text(" "+techInfo.cost[res]).attr({
 				'leading': 1,
 				'font-size': Math.round(this.font * 0.8),
