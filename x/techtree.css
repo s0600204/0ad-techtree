@@ -23,7 +23,7 @@ div {
 	display: none;
 }
 
-#modDiv {
+#modDiv, #attrDiv {
 	top: 32px;
 	right: 4px;
 	padding: 2px;
@@ -31,12 +31,22 @@ div {
 	border: solid rgb(0,136,136) 1px;
 	background: rgba(255, 255, 255, 0.5);
 	display: none;
+}
+#modDiv {
 	text-align: center;
+}
+#attrDiv {
+	max-width: 33%;
+}
+
+p {
+	padding: 0;
+	margin: 4px 2px;
 }
 
 fieldset {
 	border: solid rgb(0,136,136) 1px;
-	padding: 2px 8px 2px 2px;
+	padding: 2px;
 	text-align: left;
 }
 
@@ -70,6 +80,13 @@ select, input[type=button], fieldset {
 
 select, .ico, input, label {
 	cursor: pointer;
+}
+
+#license {
+	text-align: center;
+	display: block;
+	margin: 4px 0 2px;
+	font-size: 0.1em;
 }
 
 #renderBanner {

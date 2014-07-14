@@ -106,9 +106,6 @@ server = {
 // Called when user selects civ from dropdown
 function selectCiv(code)
 {
-	if (document.getElementById('modDiv').style.display == "block") {
-		document.getElementById('modDiv').style.display = "none";
-	}
 	
 	g_selectedCiv = code;
 	compileHeads ();
@@ -292,15 +289,24 @@ function getPhaseTech (phase) {
 
 function populateModSelect () {
 	var modSelect = document.getElementById('modSelect');
+	var modAttr = document.getElementById('modURLs');
 	
 	var tpltCheck = document.createElement('input');
 	var tpltLabel = document.createElement('label');
 	var tpltBR = document.createElement('br');
+	var tpltP = document.createElement('p');
 	tpltCheck.type = "checkbox";
+	tpltP.appendChild(document.createElement('a'));
+	tpltP.firstChild.target = "_new";
 	
 	for (var mod in g_availMods)
 	{
 		mod = g_availMods[mod];
+		
+		var newP = tpltP.cloneNode(true);
+		newP.firstChild.innerHTML = mod.name;
+		newP.firstChild.href = mod.url;
+		modAttr.appendChild(newP);
 		
 		// This follows the spec in the 0ad mod selector code
 		// type: "content"|"functionality"|"mixed/mod-pack"
@@ -326,13 +332,13 @@ function populateModSelect () {
 	}
 }
 
-function toggleModSelect () {
+function toggleDivs (div) {
 	var modDiv = document.getElementById('modDiv');
-	if (window.getComputedStyle(modDiv).display === "none") {
-		modDiv.style.display = "block";
-	} else {
-		modDiv.style.display = "none";
-	}
+	var attrDiv = document.getElementById('attrDiv');
+	
+	modDiv.style.display = (div == "mod" && window.getComputedStyle(modDiv).display == "none") ?  "block" : "none";
+	attrDiv.style.display = (div == "attr" && window.getComputedStyle(attrDiv).display == "none") ?  "block" : "none";
+	
 }
 
 function readModSelect () {
