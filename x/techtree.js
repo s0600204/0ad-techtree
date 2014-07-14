@@ -302,12 +302,18 @@ function populateModSelect () {
 	{
 		mod = g_availMods[mod];
 		
+		// This follows the spec in the 0ad mod selector code
+		// type: "content"|"functionality"|"mixed/mod-pack"
+		if (mod.type.indexOf("functionality") > -1) {
+			continue;
+		}
+		
 		var newCheck = tpltCheck.cloneNode();
 		newCheck.id = "mod__"+mod.code;
 		newCheck.value = mod.code;
 		
 		var newLabel = tpltLabel.cloneNode();
-		newLabel.innerHTML = mod.name + " (<i>" + mod.label + "</i>)"; // + " [" + mod.type + "]";
+		newLabel.innerHTML = mod.label + " (<i>" + mod.name + "</i>)"; //+ " [" + mod.type + "]";
 		newLabel.setAttribute("for", "mod__"+mod.code);
 		
 		if (g_args.mod !== null && g_args.mod.indexOf(mod.code) > -1) {
