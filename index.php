@@ -18,7 +18,7 @@
 		switch ($arg)
 		{
 			case "mod":
-				$args["mod"] = $val;
+				$args["mod"] = (is_array($val)) ? $val : Array($val);
 				break;
 		}
 	}
@@ -36,33 +36,73 @@
 		font-family: sans-serif;
 		font-size: 16px;
 	}
-	
+
 	#svg_canvas {
 		width: 1024px;
 		height: 512px;
 		display: none;
 	}
-	
+
 	div {
 		position: fixed;
 	}
-	
-	#modSelectDiv, #civSelectDiv {
-		font-size: 0.8em;
-	}
-	
-	#modSelectDiv {
+
+	#selectDiv {
 		right: 4px;
 		top: 4px;
+		font-size: 0.8em;
 		display: none;
 	}
-	
-	#civSelectDiv {
+
+	#modDiv {
+		top: 32px;
 		right: 4px;
-		top: 28px;
+		padding: 2px;
+		font-size: 0.8em;
+		border: solid rgb(0,136,136) 1px;
+		background: rgba(255, 255, 255, 0.5);
 		display: none;
+		text-align: center;
 	}
-	
+
+	fieldset {
+		border: solid rgb(0,136,136) 1px;
+		padding: 2px 8px 2px 2px;
+		text-align: left;
+	}
+
+	fieldset, input[type=button] {
+		margin: 2px;
+	}
+
+	select, input[type=button] {
+		border: solid rgb(0,136,136) 1px;
+	}
+
+	input[type=button]:hover {
+		background: rgb(255, 255, 255);
+	}
+
+	.ico {
+		font-size: 1.4em !important;
+		font-weight: bold;
+	}
+	.ico:hover {
+		color: rgb(0,136,136);
+	}
+
+	select, .ico, input[type=checkbox] {
+		vertical-align: middle;
+	}
+
+	select, input[type=button], fieldset {
+		background: rgba(255, 255, 255, 0.4);
+	}
+
+	select, .ico, input, label {
+		cursor: pointer;
+	}
+
 	#renderBanner {
 		padding: 16px;
 		top: 128px;
@@ -78,19 +118,22 @@
 		background:      -o-linear-gradient( 0deg, rgba(0,136,136,0.2), rgba(204,238,238,0.2), rgba(0,136,136,0.2));
 		background:         linear-gradient(90deg, rgba(0,136,136,0.2), rgba(204,238,238,0.2), rgba(0,136,136,0.2));
 	}
-	
 	</style>
 </head>
 
 <body onload="init()">
 
-<div id="modSelectDiv">
-	Mod :
-	<select id="modSelect" onChange="selectMod(event.target.value);"></select>
-</div>
-<div id="civSelectDiv">
-	Civ :
+<div id="selectDiv">
 	<select id="civSelect" onChange="selectCiv(event.target.value);"></select>
+	<span class="ico" onclick="toggleModSelect()">&lowast;</span>
+</div>
+
+<div id="modDiv">
+	<fieldset id="modSelect">
+		<legend><b>Available Mods</b></legend>
+	</fieldset>
+	<input type="button" value="Show" onclick="selectMod()" />
+	<input type="button" value="Clear" onclick="clearModSelect()" />
 </div>
 
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" id="svg_canvas"></svg>

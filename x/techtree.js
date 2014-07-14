@@ -106,6 +106,10 @@ server = {
 // Called when user selects civ from dropdown
 function selectCiv(code)
 {
+	if (document.getElementById('modDiv').style.display == "block") {
+		document.getElementById('modDiv').style.display = "none";
+	}
+	
 	g_selectedCiv = code;
 	compileHeads ();
 	draw3();
@@ -289,38 +293,90 @@ function getPhaseTech (phase) {
 function populateModSelect () {
 	var modSelect = document.getElementById('modSelect');
 	
-	var newOpt = document.createElement('option');
-	newOpt.text = "0AD : Empires Ascendant";
-	newOpt.value = "0ad";
-	modSelect.appendChild(newOpt);
+	var tpltCheck = document.createElement('input');
+	var tpltLabel = document.createElement('label');
+	var tpltBR = document.createElement('br');
+	tpltCheck.type = "checkbox";
 	
 	for (var mod in g_availMods)
 	{
 		mod = g_availMods[mod];
-		newOpt = document.createElement('option');
-		newOpt.text = mod.name;// + " (" + mod.type + ")";
-		newOpt.value = mod.code;
-		if (g_args.mod !== null && mod.code == g_args.mod) {
-			newOpt.selected = true;
+		
+		var newCheck = tpltCheck.cloneNode();
+		newCheck.id = "mod__"+mod.code;
+		newCheck.value = mod.code;
+		
+		var newLabel = tpltLabel.cloneNode();
+		newLabel.innerHTML = mod.name + " (<i>" + mod.label + "</i>)"; // + " [" + mod.type + "]";
+		newLabel.setAttribute("for", "mod__"+mod.code);
+		
+		if (g_args.mod !== null && g_args.mod.indexOf(mod.code) > -1) {
+			newCheck.checked = true;
 		}
-		modSelect.appendChild(newOpt);
+		
+		modSelect.appendChild(newCheck);
+		modSelect.appendChild(newLabel);
+		modSelect.appendChild(tpltBR.cloneNode());
 	}
-	
-	document.getElementById('modSelectDiv').style.display = "block";
 }
 
-function selectMod (modCode) {
-	paras = window.location.search;
-	if (paras == "") {
-		paras = "?"+"mod[]"+"="+modCode;
+function toggleModSelect () {
+	var modDiv = document.getElementById('modDiv');
+	if (window.getComputedStyle(modDiv).display === "none") {
+		modDiv.style.display = "block";
 	} else {
-		pos = paras.indexOf("mod[]=");
-		if (pos == -1) {
-			paras += "&mod[]="+modCode;
-		} else {
-			end = paras.indexOf("&", pos);
-			if (end == -1) { end = paras.length; }
-			paras = paras.slice(0, pos) + "mod[]="+modCode + paras.slice(end);
+		modDiv.style.display = "none";
+	}
+}
+
+function readModSelect () {
+	var modOpts = document.getElementById('modSelect').childNodes;
+	var modSelection = [];
+	for (var ele=0; modOpts.length > ele; ele++) {
+		if (modOpts[ele].nodeType == 1) {
+			if (modOpts[ele].type == "checkbox" && modOpts[ele].checked == true) {
+				modSelection.push(modOpts[ele].value);
+			}
+		}
+	}
+	return modSelection;
+}
+
+function clearModSelect () {
+	var modOpts = document.getElementById('modSelect').childNodes;
+	for (var ele=0; modOpts.length > ele; ele++) {
+		if (modOpts[ele].nodeType == 1) {
+			if (modOpts[ele].type == "checkbox") {
+				modOpts[ele].checked = false;
+			}
+		}
+	}
+}
+
+function selectMod () {
+	var modSelection = readModSelect();
+	
+	var modString = "";
+	for (var mod in modSelection) {
+		modString += "mod[]=" + modSelection[mod] + "&";
+	}
+	modString = modString.slice(0, -1);
+	
+	var paras = window.location.search;
+	if (paras == "") {
+		paras = "?" + modString;
+	} else {
+		while (pos = paras.indexOf("mod") > -1) {
+			var pos = paras.indexOf("mod");
+			var end = paras.indexOf("&", pos);
+			end = (end == -1) ? end = paras.length : end + 1;
+			paras = paras.slice(0, pos) + paras.slice(end);
+		}
+		if (modString.length > 1) {
+			if (paras.length > 1) {
+				paras += "&";
+			}
+			paras += modString;
 		}
 	}
 	window.location = paras;
@@ -344,7 +400,7 @@ function populateCivSelect () {
 		newOpt.value = civ.code;
 		civSelect.appendChild(newOpt);
 	}
-	document.getElementById('civSelectDiv').style.display = "block";
+	document.getElementById('selectDiv').style.display = "block";
 }
 
 function draw3 ()
