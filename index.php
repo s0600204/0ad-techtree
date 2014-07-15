@@ -28,7 +28,7 @@
 ?>
 	</script>
 	
-	<link href="./x/techtree.css" rel="stylesheet"></link>
+	<link href="./ui/techtree.css" rel="stylesheet"></link>
 </head>
 
 <body onload="init()">
@@ -58,7 +58,7 @@
 		<p>Links to individual mods' webpages:<p>
 	</fieldset>
 	<a rel="license" id="license" href="http://creativecommons.org/licenses/by-sa/3.0/" target="_new">
-		<img alt="Creative Commons License" src="https://i.creativecommons.org/l/by-sa/3.0/80x15.png" />
+		<img alt="Creative Commons License" src="./ui/cc-by-sa_80x15.png" />
 	</a>
 </div>
 
