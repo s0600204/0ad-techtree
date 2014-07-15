@@ -23,20 +23,34 @@ div {
 	display: none;
 }
 
-#modDiv {
+#modDiv, #attrDiv {
 	top: 32px;
 	right: 4px;
 	padding: 2px;
 	font-size: 0.8em;
 	border: solid rgb(0,136,136) 1px;
-	background: rgba(255, 255, 255, 0.5);
+	background: rgba(255, 255, 255, 0.9);
 	display: none;
+}
+#modDiv {
 	text-align: center;
+}
+#attrDiv {
+	max-width: 33%;
+}
+
+p {
+	padding: 0;
+	margin: 4px 2px;
+}
+
+a {
+	color: rgb(0, 126, 126);
 }
 
 fieldset {
 	border: solid rgb(0,136,136) 1px;
-	padding: 2px 8px 2px 2px;
+	padding: 2px;
 	text-align: left;
 }
 
@@ -49,27 +63,39 @@ select, input[type=button] {
 }
 
 input[type=button]:hover {
-	background: rgb(255, 255, 255);
+	background: rgba(0, 136, 136, 0.2);
 }
 
 .ico {
 	font-size: 1.4em !important;
 	font-weight: bold;
+	color: rgba(0, 136, 136, 0.8);
 }
 .ico:hover {
-	color: rgb(0,136,136);
+	color: rgb(255, 255, 255);
+}
+
+select {
+	background: rgba(255, 255, 255, 0.4);
+}
+
+select:hover {
+	border-color: rgb(255, 255, 255);
 }
 
 select, .ico, input[type=checkbox] {
 	vertical-align: middle;
 }
 
-select, input[type=button], fieldset {
-	background: rgba(255, 255, 255, 0.4);
-}
-
 select, .ico, input, label {
 	cursor: pointer;
+}
+
+#license {
+	text-align: center;
+	display: block;
+	margin: 4px 0 2px;
+	font-size: 0.1em;
 }
 
 #renderBanner {

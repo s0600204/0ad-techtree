@@ -269,6 +269,7 @@ foreach ($g_ModData as $modCode => $modInfo) {
 		,	"label"			=> $modInfo["label"]
 		,	"code"			=> $modCode
 		,	"type"			=> $modInfo["type"]
+		,	"url"			=> (substr($modInfo["url"],0,4) == "http") ? $modInfo["url"] : "http://".$modInfo["url"]
 		);
 }
 
