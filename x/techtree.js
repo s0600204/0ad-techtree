@@ -529,7 +529,7 @@ function draw3 ()
 				tb.yM += margin;
 				
 				techPair = g_techPairs[techPair].techs;
-				techPair = (techCode != techPair[0]) ? techPair[0] : techPair[1];
+				techPair = (dePath(techCode) != dePath(techPair[0])) ? techPair[0] : techPair[1];
 				tb = techbox(((wid+gap)*myCol)+margin, colHei[myCol]+myHeight+margin*2, wid, techPair);
 				myHeight += tb.height + margin;
 				
@@ -586,6 +586,16 @@ function draw3 ()
 	g_canvas.node.style.display = "block";
 	document.getElementById('renderBanner').style.display = "none";
 	resizeDrawing();
+}
+
+function dePath (techCode) {
+	var ret = "";
+	if (techCode.indexOf("/") === -1) {
+		ret = techCode;
+	} else {
+		ret = techCode.slice(techCode.indexOf("/")+1);
+	}
+	return ret;
 }
 
 function drawDepLine (techA, techB) {
