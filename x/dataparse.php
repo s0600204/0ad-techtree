@@ -13,6 +13,7 @@ global $g_ModData;
 global $g_mods;
 global $g_usedMods;
 
+global $g_report;
 
 /*
  * Load arguments
@@ -36,7 +37,7 @@ if ($_POST['mod'] === "") {
  * Load data from JSON
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-$GLOBALS['recurse'] = false;
+$GLOBALS['recurse'] = true;
 foreach ($g_usedMods as $mod) {
 	$techpath = "../mods/".$mod."/simulation/data/technologies/";
 	$civpath = "../mods/".$mod."/civs/";
@@ -205,7 +206,7 @@ foreach ($g_treeBranches as $techCode => $data) {
 				}
 			}
 		} else {
-//			echo $techCode ." is trying to use non-existant ". $pair ." as a pair\n";
+			report($techCode ." is trying to use non-existant ". $pair ." as a pair", "warn");
 		}
 	}
 }
@@ -276,7 +277,6 @@ foreach ($g_ModData as $modCode => $modInfo) {
 		);
 }
 
-
 /*
  * Output data
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -288,6 +288,7 @@ echo json_encode(Array(
 	,	"phaseList" => $g_phaseList
 	,	"civs" => $g_civs
 	,	"availMods" => $g_mods
+	,	"report" => $g_report
 	));
 
 
@@ -360,7 +361,7 @@ function recurseThru ($path, $subpath, $store, $mod) {
 					$GLOBALS[$store][$fname] = $fcontents;
 					$GLOBALS[$store][$fname]["mod"] = $mod;
 				} else {
-				//	echo $path.$subpath.$file . " is not a valid JSON file!\n";
+					report($path.$subpath.$file . " is not a valid JSON file!", "error");
 				}
 			}
 		}
@@ -389,5 +390,11 @@ function loadDependencies ($modName) {
 		return false;
 	}
 }
+
+function report ($content, $type = "log") {
+	global $g_report;
+	$g_report[] = Array($type, $content);
+}
+
 
 ?>

@@ -58,6 +58,16 @@ server = {
 	},
 	
 	_callback: function () {
+		for (var report in server.out['report']) {
+			report = server.out['report'][report];
+			report[1] = "(server) "+report[1];
+			if (report[0] == "info" || report[0] == "warn" || report[0] == "error" || report[0] == "log") {
+				console[report[0]](report[1]);
+			} else {
+				console.log(report[1]);
+			}
+		}
+		
 		if (this.userCallback !== null) {
 			this.userCallback();
 		}
