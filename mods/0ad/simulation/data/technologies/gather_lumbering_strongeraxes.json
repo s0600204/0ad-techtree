@@ -1,9 +1,10 @@
-{	
-	"genericName": "Iron Ax Heads",
+{
+	"genericName": "Stronger Ax",
 	"description": "Increases wood gathering rates for trees.",
-	"cost": {"food": 0, "wood": 200, "stone": 0, "metal": 50},
-	"requirements": {"tech": "phase_village"},
-	"requirementsTooltip": "Unlocked in Village Phase.",
+	"cost": {"food": 0, "wood": 250, "stone": 0, "metal": 50},
+	"supersedes": "gather_lumbering_ironaxes",
+	"requirements": {"tech": "phase_town"},
+	"requirementsTooltip": "Unlocked in Town Phase.",
 	"icon": "wood_axe.png",
 	"researchTime": 40,
 	"tooltip": "Workers +15% lumbering rate for trees.",

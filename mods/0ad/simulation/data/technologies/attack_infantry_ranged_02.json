@@ -1,5 +1,5 @@
 {
-	"genericName": "Ranged Infantry Irregulars",
+	"genericName": "Ranged Infantry Masterclass",
 	"specificName": {
 		"hele": "Átaktoi",
 		"mace": "Átaktoi",
@@ -10,10 +10,11 @@
 		"ptol": "Átaktoi"
 	},
 	"description": "Training increases damage of ranged infantry units.",
-	"cost": {"food": 500, "wood": 500, "stone": 250, "metal": 250},
-	"requirements": {"tech": "phase_town"},
-	"requirementsTooltip": "Unlocked in Town Phase.",
-	"icon": "arrow.png",
+	"cost": {"food": 500, "wood": 500, "stone": 250, "metal": 350},
+	"supersedes": "attack_infantry_ranged_01",
+	"requirements": {"tech": "phase_city"},
+	"requirementsTooltip": "Unlocked in City Phase.",
+	"icon": "javelin_thong.png",
 	"researchTime": 40,
 	"tooltip": "+20% ranged infantry attack.",
 	"modifications": [{"value": "Attack/Ranged/Hack", "multiply": 1.2},
