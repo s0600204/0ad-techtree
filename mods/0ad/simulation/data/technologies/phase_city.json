@@ -1,9 +1,21 @@
 {
 	"genericName": "City Phase",
-	"requirements": { "any": [{"tech":"phase_city_generic"}, {"tech":"phase_city_britons"}, {"tech":"city_phase_gauls"}, {"tech":"phase_city_pair_celts"}, {"tech":"phase_city_athen"}]},
-	"autoResearch": true,
-	"modifications": [{"value": "TerritoryInfluence/Radius", "multiply": 1.50},
-		{"value": "Health/Max", "multiply": 1.2, "affects": "CitizenSoldier"}],
-	"affects": ["CivCentre", "Infantry", "Cavalry"],
+	"specificName": {
+		"mace": "Megalópolis",
+		"spart": "Megalópolis"
+	},
+	"description": "Advances from a bustling town to a veritable metropolis, full of the wonders of modern technology.",
+	"cost": { "food": 0, "wood": 0, "stone": 750, "metal": 750 },
+	"requirements": { "all": [{ "class": "Town", "number": 4 }, { "notciv": "athen" }] },
+	"requirementsTooltip": "Requires 4 new Town Phase structures (except Walls and Civic Centers).",
+	"supersedes": "phase_town",
+	"icon": "city_phase.png",
+	"researchTime": 60,
+	"tooltip": "Advance to City Phase, which unlocks more structures and units. Territory radius for Civic Centers increased by another +50%. Citizen soldiers max health increased by +20%. All structures +9 garrisoned regeneration rate.",
+	"modifications": [
+		{ "value": "TerritoryInfluence/Radius", "multiply": 1.50, "affects": "CivCentre" },
+		{ "value": "Health/Max", "multiply": 1.2, "affects": "CitizenSoldier" },
+		{ "value": "Capturable/GarrisonRegenRate", "add": 9.0, "affects": "Structure" }
+	],
 	"soundComplete": "interface/alarm/alarm_phase.xml"
 }

@@ -1,25 +1,27 @@
 {
 	"genericName": "Will to fight",
 	"specificName": {
-		"hele": "Dynamis",
-		"mace": "Dynamis",
-		"spart": "Dynamis",
-		"athen": "Dynamis",
-		"ptol": "Dynamis",
-		"sele": "Dynamis"
+		"mace": "Dýnamis",
+		"spart": "Dýnamis",
+		"athen": "Dýnamis",
+		"ptol": "Dýnamis",
+		"sele": "Dýnamis"
 	},
 	"description": "The will to fight is crucial to victory.",
-	"cost": {"food": 3000, "wood": 3000, "stone": 3000, "metal": 3000},
+	"cost": {"food": 1500, "wood": 1500, "stone": 1500, "metal": 1500},
 	"requirements": {"tech": "phase_city"},
 	"requirementsTooltip": "Unlocked in City Phase.",
 	"icon": "clenched_fist.png",
 	"researchTime": 40,
 	"tooltip": "Inspire your troops with higher pay. All soldiers +25% attack.",
 	"modifications": [
-		{"value": "Attack/Melee/Hack", "multiply": 1.25, "affects": "CitizenSoldier Melee"},
-		{"value": "Attack/Ranged/Pierce", "multiply": 1.25, "affects": "CitizenSoldier Ranged"},
-		{"value": "Attack/Melee/Hack", "multiply": 1.25, "affects": "Champion Melee"},
-		{"value": "Attack/Ranged/Pierce", "multiply": 1.25, "affects": "Champion Ranged"}
+		{"value": "Attack/Melee/Hack", "multiply": 1.25},
+		{"value": "Attack/Melee/Pierce", "multiply": 1.25},
+		{"value": "Attack/Melee/Crush", "multiply": 1.25},
+		{"value": "Attack/Ranged/Hack", "multiply": 1.25},
+		{"value": "Attack/Ranged/Pierce", "multiply": 1.25},
+		{"value": "Attack/Ranged/Crush", "multiply": 1.25}
 	],
+	"affects": ["CitizenSoldier", "Champion", "Hero"],
 	"soundComplete": "interface/alarm/alarm_upgradearmory.xml"
 }

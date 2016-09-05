@@ -1,13 +1,11 @@
 {
 	"genericName": "Javelin Thong",
 	"specificName": {
-		"hele": "Ankyle",
-		"mace": "Ankyle",
-		"spart": "Ankyle",
-		"athen": "Ankyle",
-		"theb": "Ankyle",
-		"ptol": "Ankyle",
-		"sele": "Ankyle",
+		"mace": "Himás",
+		"spart": "Himás",
+		"athen": "Himás",
+		"ptol": "Himás",
+		"sele": "Himás",
 		"rome": "Amentum"
 	},
 	"description": "The javelin thong (the Greeks also called them loops, or bronkhos) increased the fulcrum action of the throwing arm mid-throw, increasing speed and range of the javelin.",

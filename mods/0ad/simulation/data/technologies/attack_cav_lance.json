@@ -2,13 +2,11 @@
 	"pair": "pair_cav_01",	
 	"genericName": "Cavalry Lance",
 	"specificName": {
-		"hele": "Xyston",
-		"mace": "Xyston",
-		"spart": "Xyston",
-		"athen": "Xyston",
-		"sele": "Xyston",
-		"ptol": "Xyston",
-		"theb": "Xyston",
+		"mace": "Xystón",
+		"spart": "Xystón",
+		"athen": "Xystón",
+		"sele": "Xystón",
+		"ptol": "Xystón",
 		"rome": "Hasta"
 	},
 	"description": "A long spear made specifically for cavalry.",

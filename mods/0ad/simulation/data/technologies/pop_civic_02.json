@@ -2,7 +2,7 @@
 	"pair": "pair_pop_02",
 	"genericName": "Public Assembly",
 	"specificName": {
-		"athen": "Ekklesia",
+		"athen": "Ekklēsía",
 		"rome": "Comitium"
 	},
 	"description": "Public assembly places were often the center of civic life for ancient societies. Athens had the Ekklesia, the citizens' assembly which met on the Pnyx Hill near the agora in full view of the Acropolis. The Romans had an open-aired assembly place in the great Forum Romanum called the Comitium. Here citizens could air grievances and present petitions to the patrician politicians who ruled their city in the Senate.",
@@ -12,7 +12,7 @@
 	"icon": "population.png",
 	"researchTime": 40,
 	"tooltip": "Civic Centers +5 population cap bonus.",
-	"modifications": [{"value": "Cost/PopulationBonus", "add": 5.0}],
+	"modifications": [{"value": "Cost/PopulationBonus", "add": 5}],
 	"affects": ["CivCentre"],
 	"soundComplete": "interface/alarm/alarm_upgradearmory.xml"
 }
