@@ -100,7 +100,8 @@ server = {
 						server._callback();
 					} catch (e) {
 						document.getElementById('renderBanner').innerHTML = "Hmm... something went wrong. Try again later, and hopefully I'll be fixed!";
-						console.log(http_request.responseText);
+						console.error(e);
+						console.info("Data from server: " + http_request.responseText);
 					}
 				} else {
 					alert ('There was a problem with the request.');
@@ -689,7 +690,7 @@ bonusbox = function (x, y, w, tc)
 	,	'leading': 1
 	});
 	this.tech_desc.textWrapped(true);
-	this.lines = this.tech_desc.lines.members.length;
+	this.lines = this.tech_desc.lines().members.length;
 	
 	this.box.elems = {
 		'frame': this.box_frame
@@ -786,7 +787,7 @@ techbox = function (x, y, w, tc)
 	,	'leading': 1
 	});
 	this.tech_tooltip.textWrapped(true);
-	this.lines = this.tech_tooltip.lines.members.length;
+	this.lines = this.tech_tooltip.lines().members.length;
 	
 	this.tech_desc = this.box.text(techInfo.description);
 	this.tech_desc.attr({
@@ -798,7 +799,7 @@ techbox = function (x, y, w, tc)
 	,	'leading': 1
 	});
 	this.tech_desc.textWrapped(true);
-	this.lines += this.tech_desc.lines.members.length;
+	this.lines += this.tech_desc.lines().members.length;
 	
 	this.box.elems = {
 		'frame': this.box_frame

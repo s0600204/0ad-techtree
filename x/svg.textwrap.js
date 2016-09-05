@@ -160,7 +160,7 @@ SVG.extend(SVG.Text, {
 		},
 		
 		_measureChar: function (char) {
-			var tspan = new SVG.TSpan().text(char);
+			var tspan = new SVG.Tspan().text(char);
 			var ruler = this._getRuler();
 			
 			ruler.node.appendChild(tspan.node);
